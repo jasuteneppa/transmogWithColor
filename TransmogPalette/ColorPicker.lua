@@ -80,6 +80,11 @@ local function ToggleMain(key, swatch)
         ns.state.primaryColors[key] = swatch
             and { h = swatch.h, s = swatch.s, v = swatch.v, key = key }
             or SelectionColor(key)
+        -- Aim the tuner at whatever was just picked. Selecting a colour and
+        -- looking at what came back IS the tuning gesture -- the list on screen
+        -- is the feedback -- so there is nothing extra to click, and the slider
+        -- always belongs to the bucket being looked at.
+        ns.state.tuneTarget = ns.BucketGroup(key)
     end
     AfterSelectionChange()
 end
@@ -372,6 +377,249 @@ local function RefreshStripSwatch(btn, anySelected)
     end
 end
 
+-- === The bucket tuner ===
+--
+-- Every bound in Palette.lua was placed by argument, shipped, and only then
+-- judged in game -- a round trip of hours to answer "is red too wide", asked of
+-- the one person who cannot see the number and answered by the one who cannot
+-- see the armour. One bound was moved and reverted on exactly that loop.
+--
+-- This puts the bound under the hand of whoever is looking at the list. Click a
+-- swatch to aim the slider at that colour, then drag: the classifier is
+-- re-derived on every step, so the filtered list, the swatch counts and the
+-- tags overlay all move with the thumb and the answer is simply visible.
+--
+-- Off by default (/tmpalette tune). It is an instrument, not a setting -- its
+-- numbers mean nothing without the appearance list beside them.
+
+-- Three rows: what you are tuning and what it currently returns, the bar, then
+-- what each direction of the bar does. The first version showed only a degree
+-- range, which is the one thing a person cannot see on screen.
+local TUNER_HEIGHT = 54
+-- Degrees of hue, or hundredths of lightness for black/grey/white. Wide enough
+-- to swallow a whole neighbouring band, which is the largest move worth making
+-- by eye; past that the bounds clamp against each other anyway.
+local TUNER_RANGE = 30
+local TUNER_MIN_WIDTH = 300
+
+local tunerPending = false
+
+-- Rebuilding the palette and re-filtering the slot is the expensive half, and a
+-- drag fires once per step. Coalescing keeps the list attached to the thumb
+-- without doing a slot's worth of work twice for one gesture.
+local function ApplyTuning()
+    if tunerPending then return end
+    tunerPending = true
+    C_Timer.After(0.05, function()
+        tunerPending = false
+        ns.BucketTuningChanged()
+    end)
+end
+
+local function TunerValueText(delta)
+    if delta == 0 then return "|cff999999+0|r" end
+    return ("|cffffd100%+d|r"):format(delta)
+end
+
+local function CreateTuner(panel)
+    local tuner = CreateFrame("Frame", nil, panel)
+    tuner:SetHeight(TUNER_HEIGHT)
+
+    tuner.Label = tuner:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    tuner.Label:SetPoint("TOPLEFT", tuner, "TOPLEFT", 0, 0)
+    tuner.Label:SetJustifyH("LEFT")
+
+    tuner.Value = tuner:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    tuner.Value:SetPoint("TOPRIGHT", tuner, "TOPRIGHT", 0, 0)
+    tuner.Value:SetJustifyH("RIGHT")
+
+    -- A bare Slider rather than OptionsSliderTemplate: the template brings three
+    -- fontstrings and a label layout this row has no room for, and its look
+    -- belongs to the options panel rather than to this strip.
+    local slider = CreateFrame("Slider", nil, tuner)
+    slider:SetOrientation("HORIZONTAL")
+    slider:SetHeight(16)
+    slider:SetPoint("TOPLEFT", tuner, "TOPLEFT", 0, -18)
+    slider:SetMinMaxValues(-TUNER_RANGE, TUNER_RANGE)
+    slider:SetValueStep(1)
+    slider:SetObeyStepOnDrag(true)
+    slider:SetValue(0)
+    slider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+    local thumb = slider:GetThumbTexture()
+    if thumb then thumb:SetSize(10, 18) end
+
+    local track = slider:CreateTexture(nil, "BACKGROUND")
+    track:SetColorTexture(0, 0, 0, 0.6)
+    track:SetHeight(4)
+    track:SetPoint("LEFT", slider, "LEFT", 0, 0)
+    track:SetPoint("RIGHT", slider, "RIGHT", 0, 0)
+
+    -- Where the shipped bound sits, so "back to how it was" is a place on the
+    -- bar rather than a number to remember.
+    local zero = slider:CreateTexture(nil, "BORDER")
+    zero:SetColorTexture(0.75, 0.75, 0.75, 0.9)
+    zero:SetSize(1, 10)
+    zero:SetPoint("CENTER", slider, "CENTER", 0, 0)
+
+    slider:SetScript("OnValueChanged", function(self, value)
+        -- Ignore the value we just wrote ourselves during a relayout, or the
+        -- slider re-applies its own state as if the player had dragged it.
+        if tuner.updating then return end
+        local group = ns.state.tuneTarget
+        if not group then return end
+        local v = math.floor(value + 0.5)
+        if v == ns.TuneDelta(group) then return end
+        ns.SetTuneDelta(group, v)
+        tuner.Value:SetText(TunerValueText(v))
+        ApplyTuning()
+    end)
+    slider:SetScript("OnEnter", function(self)
+        local group = ns.state.tuneTarget
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        if not group then
+            GameTooltip:SetText("Resize a bucket")
+            GameTooltip:AddLine("Click a colour swatch first.", 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+            return
+        end
+        local name = BucketLabel(group)
+        local a, b = ns.TuneNeighbours(group)
+        local from = a and b and (BucketLabel(a) .. " and " .. BucketLabel(b))
+            or (a and BucketLabel(a)) or "its neighbours"
+        GameTooltip:SetText(("Resize the %s bucket"):format(name))
+        GameTooltip:AddLine(("Drag RIGHT: %s takes appearances from %s. More things count as %s.")
+            :format(name, from, name), 0.5, 1, 0.5, true)
+        GameTooltip:AddLine(("Drag LEFT: %s gives them back to %s. Fewer things count as %s.")
+            :format(name, from, name), 1, 0.7, 0.4, true)
+        GameTooltip:AddLine("The count in the header, the swatches and the list all update as you drag.", 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine("Nothing is permanent -- Reset puts it back.", 0.6, 0.6, 0.6, true)
+        GameTooltip:Show()
+    end)
+    slider:SetScript("OnLeave", GameTooltip_Hide)
+    tuner.Slider = slider
+
+    tuner.Reset = CreateFrame("Button", nil, tuner, "UIPanelButtonTemplate")
+    tuner.Reset:SetSize(46, 18)
+    tuner.Reset:SetPoint("TOPRIGHT", tuner, "TOPRIGHT", 0, -17)
+    tuner.Reset:SetText("Reset")
+    tuner.Reset:SetScript("OnClick", function()
+        if IsShiftKeyDown() then
+            ns.ResetBucketTuning()
+        elseif ns.state.tuneTarget then
+            ns.SetTuneDelta(ns.state.tuneTarget, 0)
+        end
+        ns.BucketTuningChanged()
+    end)
+    tuner.Reset:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Reset this colour")
+        GameTooltip:AddLine("Shift-click to reset every colour.", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    tuner.Reset:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- What each direction DOES, written on the bar itself. The degrees are the
+    -- implementation; "fewer items" and "more items" are the thing being
+    -- decided, and they are what belongs under the thumb.
+    tuner.Less = tuner:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    tuner.Less:SetPoint("TOPLEFT", slider, "BOTTOMLEFT", 0, -2)
+    tuner.Less:SetText("|cff808080< narrower, fewer items|r")
+
+    tuner.More = tuner:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    tuner.More:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT", 0, -2)
+    tuner.More:SetText("|cff808080more items, wider >|r")
+
+    return tuner
+end
+
+-- How many appearances in the slot on screen this bucket returns right now.
+-- The whole point of the bar is to watch this number move, so it has to be on
+-- the panel rather than inferred from the list.
+local function GroupCount(group)
+    local mains = ns.SwatchesByKey("primary")
+    if not mains then return nil end
+    local total = 0
+    for _, key in ipairs(ns.GrainBuckets(ns.FilterGrain())) do
+        if ns.BucketGroup(key) == group then
+            local swatch = mains[key]
+            total = total + (swatch and swatch.count or 0)
+        end
+    end
+    return total
+end
+
+local function LayoutTuner(panel, width, top)
+    local tuner = panel.Tuner
+    if not tuner then return end
+    if not ns.state.showTuner then
+        tuner:Hide()
+        return
+    end
+    tuner:Show()
+    tuner:ClearAllPoints()
+    tuner:SetPoint("TOPLEFT", panel, "TOPLEFT", PANEL_INSET, -top)
+    local inner = width - 2 * PANEL_INSET
+    tuner:SetWidth(inner)
+    tuner.Slider:SetWidth(math.max(80, inner - 54))
+
+    local group = ns.state.tuneTarget
+    if not group then
+        tuner.Label:SetText("|cff999999Click a colour above, then drag the bar|r")
+        tuner.Value:SetText("")
+        tuner.Slider:Disable()
+        tuner.Slider:SetAlpha(0.35)
+        tuner.Less:Hide()
+        tuner.More:Hide()
+        return
+    end
+    tuner.Slider:Enable()
+    tuner.Slider:SetAlpha(1)
+    tuner.Less:Show()
+    tuner.More:Show()
+
+    local delta = ns.TuneDelta(group)
+
+    -- Anchor the "was" figure the moment this bucket is untuned, so the count
+    -- shown beside it is the change THIS drag has made rather than a difference
+    -- from whatever the last session left behind.
+    local count = GroupCount(group)
+    if tuner.countGroup ~= group or delta == 0 then
+        tuner.countGroup, tuner.baseCount = group, count
+    end
+
+    local label = BucketLabel(group)
+    if count then
+        local moved = tuner.baseCount and (count - tuner.baseCount) or 0
+        if moved ~= 0 then
+            local colour = moved > 0 and "|cff44ff44" or "|cffff8844"
+            tuner.Label:SetText(("%s — %d here  %s%+d|r"):format(label, count, colour, moved))
+        else
+            tuner.Label:SetText(("%s — %d in this slot"):format(label, count))
+        end
+    else
+        -- No category listed yet: the counts are "not asked", not zero.
+        tuner.Label:SetText(label)
+    end
+
+    -- The degree range is read back from the classifier rather than computed
+    -- from the slider's own value: two neighbours widened at once clamp against
+    -- each other, and a readout echoing the request would misreport the result.
+    local range = ns.TuneRangeText(group)
+    tuner.Value:SetText(("%s  |cff777777%s|r"):format(TunerValueText(delta), range or ""))
+
+    tuner.updating = true
+    if math.abs(tuner.Slider:GetValue() - delta) >= 0.5 then
+        tuner.Slider:SetValue(delta)
+    end
+    tuner.updating = false
+end
+
+function ns.ToggleTuner()
+    ns.state.showTuner = not ns.state.showTuner
+    SyncAllPanels()
+    return ns.state.showTuner
+end
+
 -- === Panel ===
 
 local function LayoutPanel(panel)
@@ -449,8 +697,16 @@ local function LayoutPanel(panel)
     -- width would be mostly empty backdrop.
     local usedColumns = math.min(columns, #keys)
     -- ...but never narrower than the header needs, or the buttons hang off it.
-    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), 210)
-    panel:SetSize(width, 2 * PANEL_INSET + HEADER_HEIGHT + rows * (SWATCH_SIZE + SWATCH_GAP))
+    local minWidth = ns.state.showTuner and TUNER_MIN_WIDTH or 210
+    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), minWidth)
+
+    local gridBottom = PANEL_INSET + HEADER_HEIGHT + rows * (SWATCH_SIZE + SWATCH_GAP)
+    local height = PANEL_INSET + gridBottom
+    if ns.state.showTuner then
+        height = height + TUNER_HEIGHT
+    end
+    panel:SetSize(width, height)
+    LayoutTuner(panel, width, gridBottom + 2)
 end
 
 SyncAllPanels = function()
@@ -550,6 +806,44 @@ local function CreatePanel(name, parent, anchorFrame)
         GameTooltip:Show()
     end)
     panel.GrainButton:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- Development aid, off by default and deliberately the least prominent
+    -- control here: it answers "what does the addon think this is" for every
+    -- tile at once, which is invaluable while tuning the classifier and pure
+    -- clutter the rest of the time. A checkbox rather than a third button
+    -- because it is the only control on the strip with a persistent state.
+    panel.TagsCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    panel.TagsCheck:SetSize(20, 20)
+    panel.TagsCheck:SetPoint("TOPRIGHT", panel.GrainButton, "TOPLEFT", -6, 2)
+    panel.TagsCheck.Label = panel.TagsCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    panel.TagsCheck.Label:SetPoint("RIGHT", panel.TagsCheck, "LEFT", -1, 0)
+    panel.TagsCheck.Label:SetText("Tags")
+    panel.TagsCheck:SetChecked(TransmogPaletteDB and TransmogPaletteDB.showColorTags or false)
+    panel.TagsCheck:SetScript("OnClick", function(self)
+        if ns.ToggleColorTags then ns.ToggleColorTags() end
+        -- Read the state back rather than trusting the click: the slash command
+        -- writes the same setting, so the checkbox must follow the setting and
+        -- never the other way round.
+        self:SetChecked(TransmogPaletteDB.showColorTags or false)
+    end)
+    panel.TagsCheck:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Show colour tags")
+        GameTooltip:AddLine("Marks every appearance with the main and accent colour the addon gave it, whether or not a filter is on.", 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine("Left chip is the main colour, right is the accent.", 0.6, 0.6, 0.6, true)
+        GameTooltip:AddLine("NO DATA means the appearance has no colour information: it is hidden while any filter is active, and never rolled.", 0.9, 0.5, 0.5, true)
+        GameTooltip:Show()
+    end)
+    panel.TagsCheck:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- So /tmpalette tags and the checkbox cannot disagree.
+    ns.UpdateTagsCheckbox = function()
+        if panel.TagsCheck then
+            panel.TagsCheck:SetChecked(TransmogPaletteDB.showColorTags or false)
+        end
+    end
+
+    panel.Tuner = CreateTuner(panel)
 
     panel.swatches = {}
     return panel

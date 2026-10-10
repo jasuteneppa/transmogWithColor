@@ -45,6 +45,22 @@ function ns.HSVToRGB(h, s, v)
     return r + m, g + m, b + m
 end
 
+-- === Live tuning state ===
+--
+-- Declared up here rather than beside the tuning code further down, because the
+-- two things that are tunable -- the greyscale cuts and the hue band bounds --
+-- sit at opposite ends of this file and both need to be told when a slider has
+-- moved. See "Live bucket tuning" below for what the numbers mean.
+--
+-- Two dirty flags, not one: each cache clears its own, and a single shared flag
+-- would be cleared by whichever rebuilt first, leaving the other stale.
+local tunedBands, tunedDirty = nil, true
+local tunedBlack, tunedWhite, tonesDirty = nil, nil, true
+
+function ns.InvalidateBucketTuning()
+    tunedDirty, tonesDirty = true, true
+end
+
 -- Below these thresholds a color reads as achromatic (black/white/gray) to
 -- the eye regardless of its hue value, which becomes noisy/meaningless.
 --
@@ -91,9 +107,41 @@ end
 local BLACK_MAX = 0.22
 local WHITE_MIN = 0.60
 
+-- Never let a tone close entirely: a bucket that can match nothing looks
+-- exactly like the addon having lost a colour.
+local MIN_TONE_SPAN = 0.04
+
+-- The greyscale cuts as tuned. `ns.state.neutralWidth[tone]` widens one tone in
+-- hundredths of value, the same unit the slider reads in.
+--
+-- Black and white each have one movable edge -- their other side is 0 and 1 --
+-- so widening them moves that edge outright. Grey has two, and widening it
+-- pushes both, half each, exactly as a hue group's run does.
+local function EffectiveTones()
+    if not tonesDirty then return tunedBlack, tunedWhite end
+    local black, white = BLACK_MAX, WHITE_MIN
+    local w = ns.state and ns.state.neutralWidth
+    if w then
+        local db = (type(w.black) == "number" and w.black or 0) / 100
+        local dg = (type(w.gray) == "number" and w.gray or 0) / 100
+        local dw = (type(w.white) == "number" and w.white or 0) / 100
+        black = black + db - dg / 2
+        white = white - dw + dg / 2
+        -- Order matters: pin black inside the scale first, then white against
+        -- black, so widening two neighbours at once can't invert the pair.
+        if black < MIN_TONE_SPAN then black = MIN_TONE_SPAN end
+        if black > 1 - 2 * MIN_TONE_SPAN then black = 1 - 2 * MIN_TONE_SPAN end
+        if white < black + MIN_TONE_SPAN then white = black + MIN_TONE_SPAN end
+        if white > 1 - MIN_TONE_SPAN then white = 1 - MIN_TONE_SPAN end
+    end
+    tunedBlack, tunedWhite, tonesDirty = black, white, false
+    return black, white
+end
+
 local function NeutralTone(v)
-    if v < BLACK_MAX then return "black" end
-    if v < WHITE_MIN then return "gray" end
+    local black, white = EffectiveTones()
+    if v < black then return "black" end
+    if v < white then return "gray" end
     return "white"
 end
 
@@ -412,18 +460,270 @@ end
 --
 -- Each entry is the band's upper bound, exclusive. The last band wraps past
 -- 345° back into red.
+--
+-- THERE IS NO ORANGE BAND. Orange and gold are one band, [32,58), 2026-08-30.
+-- This reverses the split made in ROLL_SCHEME_VERSION 2, so the reasoning is
+-- kept in full rather than left to be re-derived.
+--
+-- WoW's orange and WoW's gold are the same hue. Real gold armour extracts at
+-- h=33-45 -- "Golden Scale Cuirass" h=42 covering 81%, "Gilded Ornamental
+-- Mantle" h=40 covering 97% -- and sRGB orange is h=39. The old edge at 46 put
+-- almost all actual gold on the ORANGE side, so the gold bucket held 2,422
+-- appearances and hardly any of them were gold. Measured against item names,
+-- gold matched 4.2%, three times worse than any other family.
+--
+-- Moving the edge was tried first (46 -> 40) and REVERTED the same day. It
+-- improved every number and made the filter worse: the two buckets' median hues
+-- closed from 15 apart to 9, and both swatches started returning the same
+-- amber-looking armour. The lesson is about the metric. analyze_names.py scores
+-- "does this bucket match the word in the item name"; whether two adjacent
+-- buckets feel like different filters is not in that metric at all. Do not move
+-- a band edge on that score alone -- look at the buckets in game.
+--
+-- Merging is the honest fix, because the boundary was never real. The hue
+-- histogram over all appearances has NO valley anywhere between 0 and 70: red,
+-- rust, orange and gold are one continuous ramp peaking at h=30, and a bucket
+-- edge on a smooth slope is arbitrary wherever it is placed.
+--
+-- The original reason for splitting them was bucket balance, and it no longer
+-- holds. Merged gold is 10,126 of 64,722 appearances, 15.6% -- SMALLER than
+-- brown (19.2%) and red (18.1%), both of which are unmerged. The grab-bag
+-- failure that killed the red+rust merge was 32.7% in one bucket.
+--
+-- The upper edge is 58, not 70. The old gold band reached to 70, and 807
+-- appearances in it sat at h >= 58 -- olive and chartreuse, confirmed green by
+-- eye on rendered sheets before this was changed. They now group to green.
+--
+-- Still unfixed and NOT a band problem: 21% of this bucket is trim, a gold
+-- filigree cluster out-ranking a base that is mostly black or grey. No hue
+-- boundary touches that -- see the note on ColorSalience.
 local HUE_BANDS = {
-    { 18, "red" }, { 32, "rust" }, { 46, "orange" }, { 70, "gold" },
+    { 18, "red" }, { 32, "rust" }, { 58, "gold" },
     { 100, "olive" }, { 155, "green" }, { 195, "teal" }, { 250, "blue" },
     { 275, "indigo" }, { 300, "violet" }, { 325, "purple" }, { 345, "pink" },
 }
 
+-- === Live bucket tuning ===
+--
+-- Every boundary in this file was placed by argument, shipped, and then judged
+-- in game -- which is a terrible loop, because the person who can see whether a
+-- bucket is right has to wait for someone else to guess a number. One boundary
+-- was moved and reverted the same day on exactly that cycle.
+--
+-- So the bounds are tunable at runtime. `ns.state.bucketWidth[group]` widens or
+-- narrows a whole colour GROUP in degrees: half is taken off its lower edge and
+-- half added to its upper, pushing into whichever neighbours it meets. Groups
+-- rather than bands because a group is what the player actually sees -- "green"
+-- at broad grain is olive+green, and widening it should move the outside of
+-- that pair, not split it.
+--
+-- Bucket KEYS never change, only which appearances land in them, so a saved
+-- selection stays valid and no version stamp is needed.
+--
+-- The effective table is cached and rebuilt only when a slider moves: HueBand
+-- runs once per appearance per palette build, several thousand times per slot.
+local MIN_BAND_WIDTH = 5
+
+-- Forward declaration: HUE_GROUPS is defined below, after the swatch ordering
+-- it depends on, but EffectiveBands needs it. Without this the reference
+-- resolves to a nil GLOBAL rather than the local declared later, and every
+-- band silently loses its group.
+local HUE_GROUPS
+
+local function EffectiveBands()
+    if tunedBands and not tunedDirty then return tunedBands end
+    local widths = ns.state and ns.state.bucketWidth
+    local out = {}
+    for i = 1, #HUE_BANDS do out[i] = { HUE_BANDS[i][1], HUE_BANDS[i][2] } end
+
+    if widths then
+        -- A group owns a contiguous run of bands; widening it moves the run's
+        -- OUTER edges. The lower edge of a run is the upper bound of whatever
+        -- band precedes it, so this writes to index-1 -- with a wrap, since red
+        -- begins at the last band's bound and runs through 0.
+        local first, last = {}, {}
+        for i = 1, #out do
+            local grp = HUE_GROUPS[out[i][2]]
+            if grp then
+                if not first[grp] then first[grp] = i end
+                last[grp] = i
+            end
+        end
+        for grp, d in pairs(widths) do
+            if type(d) == "number" and d ~= 0 and first[grp] then
+                local half = d / 2
+                out[last[grp]][1] = out[last[grp]][1] + half
+                local before = first[grp] - 1
+                if before < 1 then before = #out end
+                out[before][1] = out[before][1] - half
+            end
+        end
+        -- Keep the bounds strictly increasing. Widening two neighbours at once
+        -- can otherwise invert a pair, which would make a band match nothing and
+        -- look exactly like the addon losing a colour.
+        for i = 2, #out do
+            if out[i][1] < out[i - 1][1] + MIN_BAND_WIDTH then
+                out[i][1] = out[i - 1][1] + MIN_BAND_WIDTH
+            end
+        end
+        for i = 1, #out do
+            if out[i][1] > 360 - MIN_BAND_WIDTH then out[i][1] = 360 - MIN_BAND_WIDTH end
+        end
+        for i = #out - 1, 1, -1 do
+            if out[i][1] > out[i + 1][1] - MIN_BAND_WIDTH then
+                out[i][1] = out[i + 1][1] - MIN_BAND_WIDTH
+            end
+        end
+    end
+
+    tunedBands, tunedDirty = out, false
+    return out
+end
+
 local function HueBand(h)
     h = h % 360
-    for i = 1, #HUE_BANDS do
-        if h < HUE_BANDS[i][1] then return HUE_BANDS[i][2] end
+    local bands = EffectiveBands()
+    for i = 1, #bands do
+        if h < bands[i][1] then return bands[i][2] end
     end
-    return HUE_BANDS[1][2]  -- above the last bound: wraps into red
+    return bands[1][2]  -- above the last bound: wraps into red
+end
+
+-- === The tuning API the slider talks to ===
+--
+-- One set of calls covers both axes, because from the player's side there is
+-- only one gesture: pick a swatch, widen or narrow it. What "wider" means
+-- differs underneath -- degrees of hue for a colour, hundredths of lightness
+-- for black/grey/white -- but both are stored in the slider's own units and
+-- converted at the point of use, so the UI never has to know which it has.
+
+local NEUTRAL_TONES = { black = true, gray = true, white = true }
+
+function ns.IsNeutralBucket(group)
+    return NEUTRAL_TONES[group] or false
+end
+
+-- The tunable group a bucket key belongs to. Keys carry a value suffix at the
+-- finer grains ("olive_dark"), and the band they name may group with others --
+-- widening what the player calls green has to move olive with it.
+function ns.BucketGroup(key)
+    if not key then return nil end
+    if NEUTRAL_TONES[key] then return key end
+    local band = key:match("^(%a+)_") or key
+    return HUE_GROUPS[band] or band
+end
+
+local function TuneStore(group)
+    if not ns.state then return nil end
+    if NEUTRAL_TONES[group] then
+        ns.state.neutralWidth = ns.state.neutralWidth or {}
+        return ns.state.neutralWidth
+    end
+    ns.state.bucketWidth = ns.state.bucketWidth or {}
+    return ns.state.bucketWidth
+end
+
+-- How far this group has been tuned, in slider units. Read back rather than
+-- remembered by the slider, so the control can't drift from the classifier.
+function ns.TuneDelta(group)
+    local store = TuneStore(group)
+    local d = store and store[group]
+    return type(d) == "number" and d or 0
+end
+
+function ns.SetTuneDelta(group, points)
+    local store = TuneStore(group)
+    if not store then return end
+    store[group] = (points ~= 0) and points or nil
+    ns.InvalidateBucketTuning()
+end
+
+function ns.ResetBucketTuning()
+    ns.state.bucketWidth = {}
+    ns.state.neutralWidth = {}
+    ns.InvalidateBucketTuning()
+end
+
+function ns.AnyBucketTuning()
+    -- Not ipairs over a two-element table: either store can be nil, and ipairs
+    -- would stop at the hole and report "no tuning" while a group is tuned.
+    local hue, neutral = ns.state.bucketWidth, ns.state.neutralWidth
+    if hue and next(hue) ~= nil then return true end
+    if neutral and next(neutral) ~= nil then return true end
+    return false
+end
+
+-- The effective span of a hue group in degrees. Returns nil for a neutral,
+-- which is measured on the lightness scale instead.
+function ns.BucketSpan(group)
+    if NEUTRAL_TONES[group] then return nil end
+    local bands = EffectiveBands()
+    local lo, hi
+    for i = 1, #bands do
+        if HUE_GROUPS[bands[i][2]] == group then
+            local before = i - 1
+            if before < 1 then before = #bands end
+            if not lo then lo = bands[before][1] end
+            hi = bands[i][1]
+        end
+    end
+    if not lo then return nil end
+    local span = hi - lo
+    if span <= 0 then span = span + 360 end
+    return span, lo, hi
+end
+
+-- Which buckets sit either side of this one, so the tuner can say "green grows
+-- into gold and blue" instead of describing degrees of hue. Naming the two
+-- buckets that actually gain and lose appearances is the only description of
+-- the control that means anything without reading the source.
+function ns.TuneNeighbours(group)
+    if NEUTRAL_TONES[group] then
+        if group == "black" then return "gray" end
+        if group == "white" then return "gray" end
+        return "black", "white"
+    end
+    local bands = EffectiveBands()
+    local first, last
+    for i = 1, #bands do
+        if HUE_GROUPS[bands[i][2]] == group then
+            first = first or i
+            last = i
+        end
+    end
+    if not first then return nil end
+    local before = first - 1
+    if before < 1 then before = #bands end
+    local after = last + 1
+    if after > #bands then after = 1 end
+    local lo = HUE_GROUPS[bands[before][2]] or bands[before][2]
+    local hi = HUE_GROUPS[bands[after][2]] or bands[after][2]
+    if lo == hi then return lo end
+    return lo, hi
+end
+
+-- Where a group's bounds actually sit right now, as text. The slider shows this
+-- rather than its own value alone: two neighbours widened at once clamp against
+-- each other, and a readout that reported the requested number would then be
+-- quietly lying about what the classifier is doing.
+function ns.TuneRangeText(group)
+    if NEUTRAL_TONES[group] then
+        local black, white = EffectiveTones()
+        if group == "black" then return ("0.00 – %.2f"):format(black) end
+        if group == "gray" then return ("%.2f – %.2f"):format(black, white) end
+        return ("%.2f – 1.00"):format(white)
+    end
+    local span, lo, hi = ns.BucketSpan(group)
+    if not span then return nil end
+    return ("%d° – %d° (%d° wide)"):format(lo % 360, hi % 360, span)
+end
+
+-- Everything that goes stale when a bound moves. Bucket KEYS are untouched, so
+-- saved picks stay valid -- only which appearances sit in each bucket changes,
+-- which is the same blast radius as an override.
+function ns.BucketTuningChanged()
+    ns.InvalidateBucketTuning()
+    ns.OverridesChanged()
 end
 
 ns.HueBands = HUE_BANDS
@@ -485,9 +785,12 @@ end
 -- bucket you asked for is far more visible than a missing one. Fixing it
 -- properly means splitting the band around h180, which changes HUE_BANDS and
 -- so changes the signed-off FINE grain -- a much bigger move than this was.
-local HUE_GROUPS = {
+-- No `orange` entry: orange and gold are a single band now, not two bands that
+-- group together. See the note on HUE_BANDS.
+-- Assignment, not declaration: forward-declared above so EffectiveBands can see it.
+HUE_GROUPS = {
     red = "red", rust = "brown",
-    orange = "orange", gold = "gold",
+    gold = "gold",
     olive = "green", green = "green",
     teal = "blue", blue = "blue",
     indigo = "purple", violet = "purple", purple = "purple",
@@ -509,8 +812,11 @@ BAND_ORDER.brown = BAND_ORDER.rust
 local CANONICAL_HUE = {
     red    = { h = 6,   s = 0.85 },
     brown  = { h = 25,  s = 0.65 },
-    orange = { h = 38,  s = 0.90 },
-    gold   = { h = 52,  s = 0.85 },
+    -- 42, not the old 52. The merged band is [32,58) and its contents sit at
+    -- hue p25=34, median 39, p75=44 -- 52 was out past the 95th percentile, so
+    -- the swatch advertised a yellow the bucket barely contains. 42 reads as
+    -- gold rather than orange while sitting next to the median.
+    gold   = { h = 42,  s = 0.85 },
     green  = { h = 120, s = 0.75 },
     blue   = { h = 215, s = 0.80 },
     -- 312, not 285: "purple" is BOTH a band (300-325) and a group name, and 285
@@ -582,7 +888,10 @@ ns.DEFAULT_GRAIN = "broad"
 --   5: teal regrouped from blue to green
 --   6: teal reverted to blue (5 was rejected in game the same day). Bumped
 --      FORWARD rather than back to 4, so a client that ran 5 still clears
-ns.ROLL_SCHEME_VERSION = 6
+--   7: orange and gold merged into one band again, undoing 2. The "orange" key
+--      no longer exists at any grain, so a saved slot colour holding it would
+--      silently match nothing
+ns.ROLL_SCHEME_VERSION = 7
 
 -- Same contract as ClassifyColor -- the SAME function classifies both the
 -- item's colour and the picked swatch, so a match is exact bucket equality.

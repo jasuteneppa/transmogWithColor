@@ -44,6 +44,38 @@ local function InitDB()
         TransmogPaletteDB.devOverrides = false
     end
 
+    -- === Unbiased sampling ===
+    --
+    -- Every score this addon has ever been tuned against came from items someone
+    -- noticed were WRONG. That sample cannot answer "is this better" -- it was
+    -- selected as the failures of the classifier being replaced, so any change
+    -- that moves those items scores well whether or not it improves anything.
+    -- Measured 2026-08-30: a set of changes scoring 4% -> 26% on such a sample
+    -- scored 26% against 28% for the version it replaced on an independent one.
+    --
+    -- sampleVisuals is drawn by RNG from what the Transmogrifier lists, BEFORE
+    -- anyone looks at it, so labelling it produces a number that can go down.
+    TransmogPaletteDB.sampleVisuals = TransmogPaletteDB.sampleVisuals or {}
+    TransmogPaletteDB.sampleSeen = TransmogPaletteDB.sampleSeen or {}
+    if type(TransmogPaletteDB.sampleMode) ~= "boolean" then
+        TransmogPaletteDB.sampleMode = false
+    end
+    if type(TransmogPaletteDB.samplePerSlot) ~= "number" then
+        TransmogPaletteDB.samplePerSlot = 15
+    end
+
+    -- Live bucket tuning (see the tuner in ColorPicker.lua). Per-group width
+    -- deltas, in degrees of hue and in hundredths of lightness respectively.
+    -- Persisted on purpose: judging a bound means looking at a lot of armour
+    -- across more than one sitting, and losing the setting on /reload would make
+    -- that impossible. Like colorFirst these move appearances between buckets
+    -- without renaming any bucket, so no version stamp depends on them.
+    TransmogPaletteDB.bucketWidth = TransmogPaletteDB.bucketWidth or {}
+    TransmogPaletteDB.neutralWidth = TransmogPaletteDB.neutralWidth or {}
+    if type(TransmogPaletteDB.showTuner) ~= "boolean" then
+        TransmogPaletteDB.showTuner = false
+    end
+
     -- slotColors store bucket KEYS, and the grain decides what the keys are, so
     -- a grain change makes saved picks mean something else -- or nothing. Same
     -- hazard as CLASSIFIER_VERSION, tracked separately so changing the roll
@@ -75,7 +107,16 @@ local function InitDB()
     --      stale mixed-grain selection rather than an error
     --   8: teal reverted to blue. Bumped FORWARD rather than back to 6 so a
     --      client that already ran 7 still clears its now-wrong keys
-    local CLASSIFIER_VERSION = 8
+    --   9: orange/gold band edge moved 46 -> 40, then REVERTED before release
+    --      (see the HUE_BANDS comment in Palette.lua for why). The number was
+    --      left at 9 rather than rolled back to 8: a dev client already ran 9
+    --      and stamped it, so lowering it would leave that client stamped
+    --      ahead of the check and never clearing again
+    --  10: orange and gold merged into one band. Unlike 9 this really does
+    --      change the key set -- "orange" and its shades are gone entirely, so
+    --      a saved pick holding one matches nothing and looks like a filter
+    --      that returns zero results for no reason
+    local CLASSIFIER_VERSION = 10
     if TransmogPaletteDB.classifierVersion ~= CLASSIFIER_VERSION then
         TransmogPaletteDB.primaryColors = {}
         TransmogPaletteDB.accentColor = nil
@@ -84,10 +125,21 @@ local function InitDB()
         TransmogPaletteDB.slotColors = {}
         TransmogPaletteDB.selectedColors = nil  -- old positional slots
         TransmogPaletteDB.hueBucketWidth = nil  -- knob no longer exists
+        -- A tuning is a delta against bounds that have just changed underneath
+        -- it, so keeping it would silently apply an old correction to a new
+        -- band -- the one way this knob could look like a bug rather than a
+        -- setting.
+        TransmogPaletteDB.bucketWidth = {}
+        TransmogPaletteDB.neutralWidth = {}
         TransmogPaletteDB.classifierVersion = CLASSIFIER_VERSION
     end
 
     ns.state = TransmogPaletteDB
+    -- The tuned bounds are cached, and anything that ran before ns.state existed
+    -- cached them with no tuning applied. Nothing should classify that early,
+    -- but a stale cache here would be a saved tuning silently not taking effect
+    -- until the next slider move -- an expensive thing to debug for one line.
+    if ns.InvalidateBucketTuning then ns.InvalidateBucketTuning() end
 end
 
 local visualItemIDCache = {}
@@ -132,6 +184,66 @@ end
 local function HasActiveFilter()
     if ns.state.accentColor then return true end
     return next(ns.state.primaryColors) ~= nil
+end
+
+-- === Random sampling for an honest answer key ===
+--
+-- One category's worth of appearances, identified by what it contains rather
+-- than by any API: the same slot always hands over the same list, and two
+-- different slots never do.
+local function CategorySignature(entries)
+    local n = #entries
+    if n == 0 then return nil end
+    return ("%d:%s:%s"):format(n, tostring(entries[1].visualID),
+        tostring(entries[n].visualID))
+end
+
+-- Draws this category's share of the sample, once, at random.
+--
+-- Drawn from what is RENDERED (collected and usable) because an appearance the
+-- player cannot see is one they cannot judge, and from those with colour data
+-- because the rest have nothing to be right or wrong about. Both narrow the
+-- population; neither correlates with whether the colour is correct, which is
+-- the only thing that would bias the answer.
+local function EnsureSample(entries)
+    local sig = CategorySignature(entries)
+    if not sig or ns.state.sampleSeen[sig] then return end
+    ns.state.sampleSeen[sig] = true
+
+    local pool = {}
+    for _, e in ipairs(entries) do
+        if e.visualID and e.isCollected and e.isUsable and ns.HasColorData(e.visualID) then
+            pool[#pool + 1] = e.visualID
+        end
+    end
+    -- Partial Fisher-Yates: an unbiased draw without sorting the whole list.
+    local want = math.min(ns.state.samplePerSlot, #pool)
+    for i = 1, want do
+        local j = math.random(i, #pool)
+        pool[i], pool[j] = pool[j], pool[i]
+        ns.state.sampleVisuals[pool[i]] = true
+    end
+    if want > 0 then
+        print(("|cff44ff44TransmogPalette:|r sampled %d more; %d to label. |cffffff00/tmpalette sample status|r"):format(
+            want, ns.SampleRemaining()))
+    end
+end
+
+-- How many sampled appearances still have no hand label, and how many do.
+function ns.SampleProgress()
+    local store = ns.OverrideStore()
+    local done, total = 0, 0
+    for vid in pairs(ns.state.sampleVisuals) do
+        total = total + 1
+        local o = store[vid]
+        if o and o.main then done = done + 1 end
+    end
+    return done, total
+end
+
+function ns.SampleRemaining()
+    local done, total = ns.SampleProgress()
+    return total - done
 end
 
 -- === Filter model ===
@@ -338,13 +450,25 @@ local function ApplyColorFilterToTransmog(ic, entries)
     -- The old popup rebuilt itself each time it opened and never needed this.
     if ns.RefreshColorPanels then ns.RefreshColorPanels() end
 
-    if not HasActiveFilter() then return end
-
     local filtered = {}
-    for _, entry in ipairs(entries) do
-        if MatchesFilter(entry.visualID) then
-            table.insert(filtered, entry)
+    if ns.state.sampleMode then
+        -- Sampling REPLACES the colour filter rather than combining with it.
+        -- Filtering by colour first would mean labelling only what the
+        -- classifier already believes, which is the bias this exists to avoid.
+        EnsureSample(entries)
+        for _, entry in ipairs(entries) do
+            if ns.state.sampleVisuals[entry.visualID] then
+                table.insert(filtered, entry)
+            end
         end
+    elseif HasActiveFilter() then
+        for _, entry in ipairs(entries) do
+            if MatchesFilter(entry.visualID) then
+                table.insert(filtered, entry)
+            end
+        end
+    else
+        return
     end
     lastFilteredCount = #filtered
     if #filtered == #entries then return end
@@ -804,6 +928,9 @@ local function TryHookTransmog()
     if ns.RegisterRandomizer then
         ns.RegisterRandomizer(TransmogFrame)
     end
+    if ns.RegisterColorTags then
+        ns.RegisterColorTags(ic)
+    end
 
     return true
 end
@@ -1030,6 +1157,123 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
             for _ in pairs(TransmogPaletteDB.exportedVisuals) do count = count + 1 end
             print(("|cff44ff44TransmogPalette:|r recording is %s, %d appearances stored. |cffffff00/tmpalette record on|off|clear|r"):format(
                 TransmogPaletteDB.recordVisuals and "ON" or "OFF", count))
+        end
+        return
+    end
+
+    if msg and msg:lower():match("^tags") then
+        -- Development aid: see every tile's computed colour with no filter on.
+        -- Browsing a FILTERED list can only ever show false positives, so it
+        -- cannot find an appearance that was wrongly excluded.
+        if not ns.ToggleColorTags then
+            print("|cffff4444TransmogPalette:|r colour tags are unavailable (ColorTags.lua did not load).")
+            return
+        end
+        if msg:lower():match("^tags%s+probe") then
+            if ns.ProbeColorTags then ns.ProbeColorTags() end
+            return
+        end
+        local on, withData, total, tiles = ns.ToggleColorTags()
+        print(("|cff44ff44TransmogPalette:|r colour tags %s."):format(
+            on and "|cffffff00ON|r — each tile shows main / accent" or "OFF"))
+        if on then
+            if (tiles or 0) == 0 then
+                print("  |cffff4444No tiles found.|r Open a gear slot so appearances are")
+                print("  listed, then |cffffff00/tmpalette tags probe|r to see what's there.")
+            end
+            if total > 0 then
+                print(("  This slot: %d of %d listed appearances have colour data (%.1f%%)."):format(
+                    withData, total, 100 * withData / total))
+                if withData < total then
+                    print(("  The other %d tag as |cffff4444no data|r: hidden while a filter is active, never rolled."):format(
+                        total - withData))
+                end
+            else
+                print("  Open a gear slot to see coverage for it.")
+            end
+            print("  |cffffff00fixed|r on a tile means a hand correction is in effect, not a computed colour.")
+        end
+        return
+    end
+
+    if msg and msg:lower():match("^sample") then
+        local rest = msg:lower():match("^sample%s+(.*)") or ""
+        if rest:match("^clear") then
+            TransmogPaletteDB.sampleVisuals = {}
+            TransmogPaletteDB.sampleSeen = {}
+            TransmogPaletteDB.sampleMode = false
+            if ns.RefreshFilter then ns.RefreshFilter() end
+            print("|cff44ff44TransmogPalette:|r sample cleared. Your overrides are untouched.")
+            return
+        end
+        if rest:match("^off") then
+            TransmogPaletteDB.sampleMode = false
+            if ns.RefreshFilter then ns.RefreshFilter() end
+            local done, total = ns.SampleProgress()
+            print(("|cff44ff44TransmogPalette:|r sampling OFF. %d of %d labelled — the draw is kept, so |cffffff00/tmpalette sample on|r resumes it."):format(done, total))
+            return
+        end
+        if rest:match("^status") or rest == "" and next(TransmogPaletteDB.sampleVisuals) then
+            local done, total = ns.SampleProgress()
+            print(("|cff44ff44TransmogPalette:|r sampling is %s. |cffffff00%d of %d|r labelled, %d per slot."):format(
+                TransmogPaletteDB.sampleMode and "ON" or "off", done, total,
+                TransmogPaletteDB.samplePerSlot))
+            if rest:match("^status") then return end
+        end
+
+        local n = tonumber(rest:match("^on%s+(%d+)") or rest:match("^(%d+)"))
+        if n then TransmogPaletteDB.samplePerSlot = math.max(1, math.min(60, n)) end
+        TransmogPaletteDB.sampleMode = true
+        -- Anchoring is the whole risk here: shown the addon's answer, a person
+        -- agrees with it far more often than they otherwise would, and the key
+        -- stops being independent of the thing it is meant to judge.
+        if TransmogPaletteDB.showColorTags and ns.ToggleColorTags then
+            ns.ToggleColorTags()
+            if ns.UpdateTagsCheckbox then ns.UpdateTagsCheckbox() end
+            print("|cffff9944Tags turned off|r — seeing the addon's guess would bias your labels.")
+        end
+        if ns.RefreshFilter then ns.RefreshFilter() end
+        print(("|cff44ff44TransmogPalette:|r sampling |cffffff00ON|r, %d per slot."):format(
+            TransmogPaletteDB.samplePerSlot))
+        print("  Visit each gear slot. The list shows only a RANDOM draw from it.")
+        print("  Right-click each one and name the colour you see — including the")
+        print("  ones it already gets right. Those are what stop a change breaking things.")
+        print("  |cffffff00/reload|r when done, then |cffffff00python tools/score_overrides.py --sample|r")
+        return
+    end
+
+    if msg and msg:lower():match("^tune") then
+        if not ns.ToggleTuner then
+            print("|cffff4444TransmogPalette:|r the tuner is unavailable (ColorPicker.lua did not load).")
+            return
+        end
+        if msg:lower():match("^tune%s+reset") then
+            ns.ResetBucketTuning()
+            ns.BucketTuningChanged()
+            print("|cff44ff44TransmogPalette:|r every bucket is back to its shipped bounds.")
+            return
+        end
+        local on = ns.ToggleTuner()
+        print(("|cff44ff44TransmogPalette:|r bucket tuner %s."):format(
+            on and "|cffffff00ON|r" or "OFF"))
+        if on then
+            print("  Click a colour on the strip, then drag the bar to widen or narrow it.")
+            print("  The list, the counts and the tags all update as you drag.")
+            print("  |cffffff00Reset|r restores that colour; shift-click resets every colour.")
+            print("  |cffffff00/tmpalette tags|r shows what each tile was actually called.")
+        end
+        -- Named individually rather than as a count: a tuning persists across a
+        -- /reload, so the one way this becomes a bug is the player forgetting a
+        -- bound is moved and reading the result as the classifier misbehaving.
+        if ns.AnyBucketTuning and ns.AnyBucketTuning() then
+            print("  |cffff9944In effect right now:|r")
+            for group, d in pairs(TransmogPaletteDB.bucketWidth) do
+                print(("    %s %+d° — now %s"):format(group, d, ns.TuneRangeText(group) or "?"))
+            end
+            for tone, d in pairs(TransmogPaletteDB.neutralWidth) do
+                print(("    %s %+d — now %s"):format(tone, d, ns.TuneRangeText(tone) or "?"))
+            end
+            print("  |cffffff00/tmpalette tune reset|r puts them all back.")
         end
         return
     end
