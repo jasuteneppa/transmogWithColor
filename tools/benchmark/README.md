@@ -71,3 +71,8 @@ better. Otherwise it is reverted, however good the idea sounded.
   50%, missed 55%, lost 49%. Current best-20 wrong: red 15, purple 10,
   gold 0, green 0, but brown 100 (gold metal), orange 100, black 90,
   gray 60, blue 55, pink 50, white 50.
+- 2026-10-10: in-game sweep (97 pages, 9 slots x 11 colours, head excluded)
+  added 408 newly judged tiles -> 1,456 labelled, 701 held out. In game,
+  current matcher, tuning half: 50% of judged page-1 tiles are clearly the
+  wrong colour. gold 3%, green 3%, purple 26%, red 38%, white 38%, blue 55%,
+  gray 58%, pink 67%, brown 77%, black 92%, orange 100%.
