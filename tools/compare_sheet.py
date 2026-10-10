@@ -84,7 +84,8 @@ def main():
                fill=(150, 150, 160))
 
         scores = np.array([me.texture_score(data[t["vid"]], lab) for t in tiles])
-        new = [i for i in np.argsort(-scores)[:n] if scores[i] >= MIN_SCORE]
+        cutoff = sw.get("min_score", MIN_SCORE)
+        new = [i for i in np.argsort(-scores)[:n] if scores[i] >= cutoff]
         legacy = [i for i, f in enumerate(old) if f == bucket]
         if args.slot is None and len(legacy) > n:
             legacy = sorted(rng.choice(legacy, n, replace=False).tolist())

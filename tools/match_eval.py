@@ -76,12 +76,42 @@ def closeness(lab, target):
     return np.exp(-0.5 * d2 / SIGMA ** 2)
 
 
+# === Coloured or not is a hard line ===
+#
+# Distance alone put white trousers under a pale cyan swatch and dark red ones
+# under black: by the numbers those ARE near each other. To a person they are
+# not -- whether a surface has any colour at all is the first thing anyone
+# judges, before which colour. So each cluster gets a colourfulness m in [0, 1]
+# from its on-screen chroma (a short ramp, not a step, so a cluster right at
+# the edge does not flip an item's results on a rounding difference):
+#   - a colour swatch counts only the coloured part of a cluster (m), so a
+#     cool white or a steel grey never matches pale cyan or slate;
+#   - a grey-tone swatch counts only the grey part (1 - m), and is scaled down
+#     by how much of the item is coloured at all, so red trousers with dark
+#     seams are not "black", and black armour with gold trim ranks below
+#     plain black armour.
+COLOR_C_LO, COLOR_C_HI = 8.0, 18.0
+
+
+def colourfulness(lab, achromatic):
+    c = np.hypot(lab[:, 1], lab[:, 2])
+    m = np.clip((c - COLOR_C_LO) / (COLOR_C_HI - COLOR_C_LO), 0, 1)
+    # The generator's own perceptual verdict wins where it says "no hue".
+    return np.where(achromatic, 0.0, m)
+
+
 def texture_score(ranks, target):
     """Coverage-weighted closeness of an appearance's texture clusters."""
     hsv = [c[:3] for c in ranks]
     w = np.array([c[3] for c in ranks])
     lab = cc.calibrated_lab(hsv, *FIT)
-    return float((w * closeness(lab, target)).sum() / max(w.sum(), 1e-9))
+    m = colourfulness(lab, np.array([bool(c[4]) for c in ranks]))
+    total = max(w.sum(), 1e-9)
+    close = closeness(lab, target)
+    if np.hypot(target[1], target[2]) < NEUTRAL_TARGET_CHROMA:
+        coloured_share = (w * m).sum() / total
+        return float((w * (1 - m) * close).sum() / total * (1 - coloured_share))
+    return float((w * m * close).sum() / total)
 
 
 def screen_score(tile, target):
