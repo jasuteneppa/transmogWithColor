@@ -103,22 +103,23 @@ def whole_game_unfindable(method, data, colours):
 
 
 def sweep_pages(labels, colours):
-    """What the player actually saw: each in-game sweep page (current matcher,
-    see /tmpalette capture sweep), scored by its labelled tiles."""
-    out = {c: [0, 0] for c in colours}   # [judged, no]
+    """What the player actually saw: each in-game sweep page (see /tmpalette
+    capture sweep), scored by its labelled tiles, per matcher version."""
+    out = {}   # matcher -> colour -> [judged, no]
     per = {}
     for rec, _ in cc.load_pages():
         sw = rec.get("sweep")
         if not isinstance(sw, dict):
             continue
         c = sw["filter"][2:]
+        mo = out.setdefault(sw.get("matcher", "v1"), {k: [0, 0] for k in colours})
         for t in rec["tiles"]:
             l = labels.get(int(t[0]))
             if not l or c in l["unsure"]:
                 continue
             no = c not in l["yes"]
-            out[c][0] += 1
-            out[c][1] += no
+            mo[c][0] += 1
+            mo[c][1] += no
             d = per.setdefault((c, sw["slot"]), [0, 0])
             d[0] += 1
             d[1] += no
@@ -163,11 +164,13 @@ def main():
         w = np.nanmean([r["wrong"] for r in rows.values()])
         mi = np.nanmean([r["missed"] for r in rows.values()])
         print(f"{name:8s} mean wrong {w:.0%}  mean missed {mi:.0%}  lost {lost:.0%} of {n} obviously coloured items")
-    out, per = sweep_pages(labels, colours)
-    print("\nIN GAME, page 1 as seen (current matcher), clearly wrong / judged:")
-    print("  " + "  ".join(f"{c} {n}/{j}" + (f" {n / j:.0%}" if j else "") for c, (j, n) in out.items()))
-    tj, tn = sum(v[0] for v in out.values()), sum(v[1] for v in out.values())
-    print(f"  overall {tn}/{tj} = {tn / tj:.0%} of judged page-1 tiles are clearly the wrong colour")
+    allout, per = sweep_pages(labels, colours)
+    for matcher, out in allout.items():
+        print(f"\nIN GAME, page 1 as seen ({matcher}), clearly wrong / judged:")
+        print("  " + "  ".join(f"{c} {n}/{j}" + (f" {n / j:.0%}" if j else "") for c, (j, n) in out.items()))
+        tj, tn = sum(v[0] for v in out.values()), sum(v[1] for v in out.values())
+        if tj:
+            print(f"  overall {tn}/{tj} = {tn / tj:.0%} of judged page-1 tiles are clearly the wrong colour")
     if args.game:
         for name, m in methods:
             print(f"{name:8s} whole-game unfindable {whole_game_unfindable(m, data, colours):.1%}")
