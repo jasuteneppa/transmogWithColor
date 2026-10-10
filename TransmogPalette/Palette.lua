@@ -291,6 +291,8 @@ end
 -- bucket has moved, so every cached palette and per-slot candidate list is
 -- stale. Same sequence as /tmpalette colorfirst.
 function ns.OverridesChanged()
+    -- Match scores read overrides too (Matching.lua), and are cached.
+    if ns.InvalidateMatchCache then ns.InvalidateMatchCache() end
     ns.InvalidateSwatchPalettes()
     if ns.InvalidateRandomizerSlots then ns.InvalidateRandomizerSlots() end
     if ns.RefreshRandomizerPanel then ns.RefreshRandomizerPanel() end

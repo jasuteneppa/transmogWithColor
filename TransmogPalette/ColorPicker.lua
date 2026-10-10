@@ -53,10 +53,10 @@ end
 -- slot. The stored value keeps h/s/v so anything drawing the selection doesn't
 -- have to re-derive the swatch colour.
 
+-- Selections are keyed by swatch key (Matching.lua); the value only needs
+-- the key, and stays a table so `next()`-based checks elsewhere are unchanged.
 local function SelectionColor(key)
-    local h, s, v = ns.CanonicalSwatch(key)
-    if not h then return nil end
-    return { h = h, s = s, v = v, key = key }
+    return { key = key }
 end
 
 local SyncAllPanels
@@ -69,29 +69,21 @@ local function AfterSelectionChange()
     RefreshAll()
 end
 
-local function ToggleMain(key, swatch)
+local function ToggleMain(key)
     if ns.state.primaryColors[key] then
         ns.state.primaryColors[key] = nil
     else
-        -- Prefer the swatch's own averaged colour when the bucket is actually
-        -- present on screen; fall back to the canonical one for a bucket this
-        -- slot has nothing in, which still has to be selectable (selections
-        -- persist across slots).
-        ns.state.primaryColors[key] = swatch
-            and { h = swatch.h, s = swatch.s, v = swatch.v, key = key }
-            or SelectionColor(key)
+        ns.state.primaryColors[key] = SelectionColor(key)
     end
     AfterSelectionChange()
 end
 
-local function ToggleAccent(key, swatch)
+local function ToggleAccent(key)
     local current = ns.state.accentColor
     if current and current.key == key then
         ns.state.accentColor = nil
     else
-        ns.state.accentColor = swatch
-            and { h = swatch.h, s = swatch.s, v = swatch.v, key = key }
-            or SelectionColor(key)
+        ns.state.accentColor = SelectionColor(key)
     end
     AfterSelectionChange()
 end
@@ -113,6 +105,10 @@ end
 local VALUE_WORD = { dark = "Dark", mid = "Mid", light = "Light" }
 
 local function BucketLabel(key)
+    -- Strip and override-picker keys are swatches; the outfit roller's popup
+    -- still uses the older bucket keys, which fall through to the parsing below.
+    local info = ns.MatchKeyInfo and ns.MatchKeyInfo(key)
+    if info then return info.name end
     local band, vband = key:match("^(%a+)_(%a+)$")
     band = band or key
     local name = band:sub(1, 1):upper() .. band:sub(2)
@@ -268,6 +264,10 @@ end
 local function SwatchTooltip(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:SetText(BucketLabel(self.key))
+    local info = ns.MatchKeyInfo(self.key)
+    if info and info.members and info.members ~= info.name then
+        GameTooltip:AddLine("Includes " .. info.members, 0.7, 0.7, 0.7, true)
+    end
 
     -- Both counts, because a colour common as a main can be nonexistent as an
     -- accent -- they are drawn from separate palettes (rank-1 vs rank-2
@@ -322,9 +322,9 @@ local function CreateStripSwatch(panel)
     btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     btn:SetScript("OnClick", function(self, button)
         if button == "RightButton" then
-            ToggleAccent(self.key, self.swatch)
+            ToggleAccent(self.key)
         else
-            ToggleMain(self.key, self.swatch)
+            ToggleMain(self.key)
         end
         -- The tooltip is still up and its text just went stale.
         SwatchTooltip(self)
@@ -372,18 +372,48 @@ local function RefreshStripSwatch(btn, anySelected)
     end
 end
 
+-- === Counts ===
+--
+-- How many listed appearances each strip key would return as a main colour
+-- and as an accent, given the REST of the filter -- the same MatchesFilter
+-- the list uses, so a count is exactly what clicking yields. Cached until
+-- the selection or the listed category changes (ns.InvalidateSwatchPalettes).
+local function Counts()
+    local cached = ns.swatchPalettes.matchCounts
+    if cached then return cached end
+    local visuals = ns.GetCurrentVisuals()
+    if not visuals then return nil end
+    local keys = ns.MatchStripKeys()
+    local mains, accents = {}, {}
+    for _, vid in ipairs(visuals) do
+        if ns.HasColorData(vid) then
+            local asMain = ns.MatchesFilterExcept(vid, "primary")
+            local asAccent = ns.MatchesFilterExcept(vid, "accent")
+            if asMain or asAccent then
+                for _, k in ipairs(keys) do
+                    local r = ns.MatchScore(vid, k.key)
+                    if r and r >= 1 then
+                        if asMain then mains[k.key] = (mains[k.key] or 0) + 1 end
+                        if asAccent then accents[k.key] = (accents[k.key] or 0) + 1 end
+                    end
+                end
+            end
+        end
+    end
+    cached = { mains = mains, accents = accents }
+    ns.swatchPalettes.matchCounts = cached
+    return cached
+end
+
 -- === Panel ===
 
 local function LayoutPanel(panel)
-    local grain = ns.FilterGrain()
-    local keys = ns.GrainBuckets(grain)
-    local mains = ns.SwatchesByKey("primary")
-    local accents = ns.SwatchesByKey("accent")
+    local keys = ns.MatchStripKeys()
+    local counts = Counts()
     local anySelected = next(ns.state.primaryColors) ~= nil
     -- Nil, not empty: the Transmogrifier has not listed a category yet, so
-    -- every count is "not asked" rather than zero. ForEachEligibleColor
-    -- deliberately has no whole-dataset fallback, so this state is real.
-    local countsKnown = ns.GetCurrentVisuals() ~= nil
+    -- every count is "not asked" rather than zero.
+    local countsKnown = counts ~= nil
 
     -- Fitted to the parent rather than fixed: at broad grain 11 swatches are one
     -- row, but fine grain is 39 and has to wrap inside Blizzard's frame.
@@ -393,33 +423,18 @@ local function LayoutPanel(panel)
     local columns = math.floor((available - 2 * PANEL_INSET) / (SWATCH_SIZE + SWATCH_GAP))
     columns = math.max(MIN_COLUMNS, math.min(MAX_COLUMNS, columns))
 
-    for i, key in ipairs(keys) do
+    for i, k in ipairs(keys) do
         local btn = panel.swatches[i]
         if not btn then
             btn = CreateStripSwatch(panel)
             panel.swatches[i] = btn
         end
 
-        local swatch = mains[key]
-        btn.key = key
-        btn.swatch = swatch
-        btn.mainCount = swatch and swatch.count or 0
-        btn.accentCount = accents[key] and accents[key].count or 0
+        btn.key = k.key
+        btn.mainCount = counts and counts.mains[k.key] or 0
+        btn.accentCount = counts and counts.accents[k.key] or 0
         btn.countsKnown = countsKnown
-
-        -- The bucket's averaged colour when the slot has it, its canonical
-        -- colour when it does not -- an empty bucket still has to be drawn as
-        -- the colour it represents.
-        local h, s, v
-        if swatch then
-            h, s, v = swatch.h, swatch.s, swatch.v
-        else
-            h, s, v = ns.CanonicalSwatch(key)
-        end
-        if h then
-            local r, g, b = ns.HSVToRGB(h, s, v)
-            btn.Swatch:SetColorTexture(r, g, b)
-        end
+        btn.Swatch:SetColorTexture(k.r, k.g, k.b)
 
         local col = (i - 1) % columns
         local row = math.floor((i - 1) / columns)
@@ -441,7 +456,7 @@ local function LayoutPanel(panel)
     else
         panel.Label:SetText("Colours:")
     end
-    panel.GrainButton:SetText(grain == "fine" and "Less" or "More")
+    panel.GrainButton:SetText(ns.MatchDetail() == "all" and "Less" or "More")
 
     local rows = math.ceil(#keys / columns)
     -- Sized to the swatches actually laid out, not to the column budget: at
@@ -449,7 +464,8 @@ local function LayoutPanel(panel)
     -- width would be mostly empty backdrop.
     local usedColumns = math.min(columns, #keys)
     -- ...but never narrower than the header needs, or the buttons hang off it.
-    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), 210)
+    -- The header holds the label, the Swatches checkbox and two buttons.
+    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), 270)
     panel:SetSize(width, 2 * PANEL_INSET + HEADER_HEIGHT + rows * (SWATCH_SIZE + SWATCH_GAP))
 end
 
@@ -465,12 +481,11 @@ function ns.RefreshColorPanels()
     SyncAllPanels()
 end
 
-local function ToggleGrain(panel)
-    local next_ = (ns.FilterGrain() == "fine") and "broad" or "fine"
-    -- Does NOT clear the selection -- ns.SetFilterGrain translates it, which is
-    -- only expressible because the mains are a set (one broad "green" becomes
-    -- exactly the fine greens).
-    ns.SetFilterGrain(next_)
+local function ToggleGrain()
+    -- Does NOT clear the selection -- ns.SetMatchDetail translates it: a
+    -- general "Green" becomes its member greens, and back.
+    ns.SetMatchDetail(ns.MatchDetail() == "all" and "general" or "all")
+    ns.InvalidateSwatchPalettes()
     SyncAllPanels()
     RefreshAll()
 end
@@ -536,20 +551,52 @@ local function CreatePanel(name, parent, anchorFrame)
     panel.GrainButton:SetSize(46, 18)
     panel.GrainButton:SetPoint("TOPRIGHT", panel.ClearButton, "TOPLEFT", -4, 0)
     panel.GrainButton:SetText("More")
-    panel.GrainButton:SetScript("OnClick", function() ToggleGrain(panel) end)
+    panel.GrainButton:SetScript("OnClick", ToggleGrain)
     panel.GrainButton:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        if ns.FilterGrain() == "fine" then
-            GameTooltip:SetText("Broader colours")
+        if ns.MatchDetail() == "all" then
+            GameTooltip:SetText("Fewer colours")
             GameTooltip:AddLine("Groups the shades back into one swatch per colour.", 0.8, 0.8, 0.8, true)
         else
-            GameTooltip:SetText("More shades")
-            GameTooltip:AddLine("Splits each colour into its dark, mid and light shades.", 0.8, 0.8, 0.8, true)
+            GameTooltip:SetText("More colours")
+            GameTooltip:AddLine("Shows every shade: maroon and red, bronze and brown, jade, teal, slate and more.", 0.8, 0.8, 0.8, true)
         end
         GameTooltip:AddLine("Your picks carry across.", 0.6, 0.6, 0.6)
         GameTooltip:Show()
     end)
     panel.GrainButton:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- The colour swatches drawn on every appearance tile (ColorTags.lua). A
+    -- checkbox rather than a third button because it is the only control on
+    -- the strip with a persistent state.
+    panel.TagsCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    panel.TagsCheck:SetSize(20, 20)
+    panel.TagsCheck:SetPoint("TOPRIGHT", panel.GrainButton, "TOPLEFT", -6, 2)
+    panel.TagsCheck.Label = panel.TagsCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    panel.TagsCheck.Label:SetPoint("RIGHT", panel.TagsCheck, "LEFT", -1, 0)
+    panel.TagsCheck.Label:SetText("Swatches")
+    panel.TagsCheck:SetChecked(TransmogPaletteDB and TransmogPaletteDB.showColorTags or false)
+    panel.TagsCheck:SetScript("OnClick", function(self)
+        if ns.ToggleColorTags then ns.ToggleColorTags() end
+        -- Read the state back rather than trusting the click: the slash command
+        -- writes the same setting, so the checkbox must follow the setting.
+        self:SetChecked(TransmogPaletteDB.showColorTags or false)
+    end)
+    panel.TagsCheck:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Show swatches on appearances")
+        GameTooltip:AddLine("Marks every appearance with the two colours it matches best, whether or not a filter is on.", 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine("NO DATA means the appearance has no colour information: it is hidden while any filter is active, and never rolled.", 0.9, 0.5, 0.5, true)
+        GameTooltip:Show()
+    end)
+    panel.TagsCheck:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- So /tmpalette swatches and the checkbox cannot disagree.
+    ns.UpdateTagsCheckbox = function()
+        if panel.TagsCheck then
+            panel.TagsCheck:SetChecked(TransmogPaletteDB.showColorTags or false)
+        end
+    end
 
     panel.swatches = {}
     return panel
