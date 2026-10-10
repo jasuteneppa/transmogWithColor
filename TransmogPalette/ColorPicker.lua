@@ -449,8 +449,8 @@ local function LayoutPanel(panel)
     -- width would be mostly empty backdrop.
     local usedColumns = math.min(columns, #keys)
     -- ...but never narrower than the header needs, or the buttons hang off it.
-    -- The header holds the label, the Tags checkbox and two buttons.
-    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), 245)
+    -- The header holds the label, the Swatches checkbox and two buttons.
+    local width = math.max(2 * PANEL_INSET + usedColumns * (SWATCH_SIZE + SWATCH_GAP), 270)
     panel:SetSize(width, 2 * PANEL_INSET + HEADER_HEIGHT + rows * (SWATCH_SIZE + SWATCH_GAP))
 end
 
@@ -603,7 +603,7 @@ local function CreatePanel(name, host, anchorFrame)
     panel.TagsCheck:SetPoint("TOPRIGHT", panel.GrainButton, "TOPLEFT", -6, 2)
     panel.TagsCheck.Label = panel.TagsCheck:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     panel.TagsCheck.Label:SetPoint("RIGHT", panel.TagsCheck, "LEFT", -1, 0)
-    panel.TagsCheck.Label:SetText("Tags")
+    panel.TagsCheck.Label:SetText("Swatches")
     panel.TagsCheck:SetChecked(TransmogPaletteDB and TransmogPaletteDB.showColorTags or false)
     panel.TagsCheck:SetScript("OnClick", function(self)
         if ns.ToggleColorTags then ns.ToggleColorTags() end
@@ -614,15 +614,15 @@ local function CreatePanel(name, host, anchorFrame)
     end)
     panel.TagsCheck:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Show colour tags")
+        GameTooltip:SetText("Show swatches on appearances")
         GameTooltip:AddLine("Marks every appearance with the main and accent colour the addon gave it, whether or not a filter is on.", 0.8, 0.8, 0.8, true)
-        GameTooltip:AddLine("Left chip is the main colour, right is the accent.", 0.6, 0.6, 0.6, true)
+        GameTooltip:AddLine("Left swatch is the main colour, right is the accent.", 0.6, 0.6, 0.6, true)
         GameTooltip:AddLine("NO DATA means the appearance has no colour information: it is hidden while any filter is active, and never rolled.", 0.9, 0.5, 0.5, true)
         GameTooltip:Show()
     end)
     panel.TagsCheck:SetScript("OnLeave", GameTooltip_Hide)
 
-    -- So /tmpalette tags and the checkbox cannot disagree.
+    -- So /tmpalette swatches and the checkbox cannot disagree.
     ns.UpdateTagsCheckbox = function()
         if panel.TagsCheck then
             panel.TagsCheck:SetChecked(TransmogPaletteDB.showColorTags or false)

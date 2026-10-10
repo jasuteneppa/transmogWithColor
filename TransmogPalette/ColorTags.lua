@@ -18,10 +18,11 @@ local _, ns = ...
 -- count for the current slot.
 --
 -- ON by default. Started as a development aid, kept for players because it
--- shows what a swatch will return before it is clicked. Toggled by the Tags
+-- shows what a swatch will return before it is clicked. Players know these as
+-- "swatches" (the file keeps its development name). Toggled by the Swatches
 -- checkbox on the colour strip or:
 --
---     /tmpalette tags
+--     /tmpalette swatches
 --
 -- Refresh is a throttled ticker rather than an event callback. The tiles are
 -- POOLED and reused across pages and slots, so a tag written once is wrong as

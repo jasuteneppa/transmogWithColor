@@ -1485,25 +1485,26 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         return
     end
 
-    if msg and msg:lower():match("^tags") then
+    -- "swatches" to players; "tags" was the development name and still works.
+    if msg and (msg:lower():match("^swatches") or msg:lower():match("^tags")) then
         if not ns.ToggleColorTags then
-            print("|cffff4444TransmogPalette:|r colour tags are unavailable (ColorTags.lua did not load).")
+            print("|cffff4444TransmogPalette:|r appearance swatches are unavailable (ColorTags.lua did not load).")
             return
         end
-        if msg:lower():match("^tags%s+probe") then
+        if msg:lower():match("^%a+%s+probe") then
             if ns.ProbeColorTags then ns.ProbeColorTags() end
             return
         end
         local on, withData, total, tiles = ns.ToggleColorTags()
-        print(("|cff44ff44TransmogPalette:|r colour tags %s."):format(
+        print(("|cff44ff44TransmogPalette:|r appearance swatches %s."):format(
             on and "|cffffff00ON|r — each tile shows main / accent" or "OFF"))
         if on then
             if (tiles or 0) == 0 then
                 print("  |cffff4444No tiles found.|r Open a gear slot so appearances are")
-                print("  listed, then |cffffff00/tmpalette tags probe|r to see what's there.")
+                print("  listed, then |cffffff00/tmpalette swatches probe|r to see what's there.")
             end
             if total > 0 and withData < total then
-                print(("  %d of %d listed appearances have no colour data and tag as |cffff4444no data|r."):format(
+                print(("  %d of %d listed appearances have no colour data and show |cffff4444no data|r."):format(
                     total - withData, total))
             end
         end
@@ -1548,7 +1549,7 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     print("  |cffffff00/tmpalette grain|r - how coarse the roll colours are (fine, medium, coarse, broad)")
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
-    print("  |cffffff00/tmpalette tags|r - show or hide the colour chips on each appearance")
+    print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")
     print("  |cffffff00/tmpalette resetpos|r - put the colour strip back after dragging it")
     if total > 0 then
         print(("  colour data covers %d of the %d appearances currently listed."):format(withData, total))
