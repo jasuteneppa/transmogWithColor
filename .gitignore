@@ -16,3 +16,6 @@ __pycache__/
 *.bak-*
 *.geomfix
 *.reprofile
+
+# Local research output (screenshot crops, sheets)
+research/

@@ -57,10 +57,22 @@ def swatch_lab(hsv):
     return cn.srgb_to_lab(np.array([colorsys.hsv_to_rgb(hsv[0] / 360, hsv[1], hsv[2])]))[0]
 
 
+# A grey swatch (black, grey, white) is the one place tint must count MORE, not
+# less: dark brown leather sits a short a*/b* step from black, and with the
+# chromatic weighting it ranked as black -- seen in review as brown boots and a
+# gold gauntlet on the black row. Lightness is also what separates the greys
+# from each other, so it counts in full.
+NEUTRAL_TARGET_CHROMA = 10.0
+NEUTRAL_K_TINT = 2.5
+
+
 def closeness(lab, target):
     """(N, 3) Lab -> (N,) in [0, 1], 1 at the target colour."""
     d = lab - target
-    d2 = (K_L * d[:, 0]) ** 2 + d[:, 1] ** 2 + d[:, 2] ** 2
+    if np.hypot(target[1], target[2]) < NEUTRAL_TARGET_CHROMA:
+        d2 = d[:, 0] ** 2 + NEUTRAL_K_TINT ** 2 * (d[:, 1] ** 2 + d[:, 2] ** 2)
+    else:
+        d2 = (K_L * d[:, 0]) ** 2 + d[:, 1] ** 2 + d[:, 2] ** 2
     return np.exp(-0.5 * d2 / SIGMA ** 2)
 
 

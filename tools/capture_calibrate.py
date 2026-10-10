@@ -235,11 +235,37 @@ def calibrate(tiles, data):
     return np.array(rows, dtype=np.float64)
 
 
-def calibrated_lab(hsv, gain, offset, chroma_ratio):
+# On screen, hue moves as well as lightness: the game's lighting pushes warm
+# colours toward yellow and violets toward blue. Measured over 705 texture
+# cluster / screen pairs (lit pixels within 40 degrees of the cluster's hue),
+# as the median shift per 30-degree CIELAB hue sector of the TEXTURE colour.
+# Texture orange (h 30-60) shows ~12 degrees yellower -- which is why "yellow"
+# pants were ranking under red -- and violet (h 240-300) 12-15 degrees bluer,
+# which is why a violet swatch returned a blue-looking staff. Sectors with
+# fewer than 8 pairs (210-240) are interpolated.
+HUE_SHIFT = [(15, 5.0), (45, 11.7), (75, 5.4), (105, -1.4), (135, -2.1), (165, -0.9),
+             (195, -0.5), (255, -14.9), (285, -11.9), (315, -6.1), (345, 1.0)]
+
+
+def hue_shift(h):
+    xs = np.array([c for c, _ in HUE_SHIFT])
+    ys = np.array([s for _, s in HUE_SHIFT])
+    # Circular interpolation: pad one period either side.
+    xs = np.concatenate([xs - 360, xs, xs + 360])
+    ys = np.concatenate([ys, ys, ys])
+    return np.interp(h % 360, xs, ys)
+
+
+def calibrated_lab(hsv, gain, offset, chroma_ratio, rotate=True):
     """Texture colour -> the colour it shows on screen, by the measured fit."""
     lab = _hsv_to_lab(hsv)
     L = np.clip(gain * lab[:, 0] + offset, 0, 100)
     ab = lab[:, 1:] * chroma_ratio
+    if rotate:
+        h = np.degrees(np.arctan2(ab[:, 1], ab[:, 0])) % 360
+        t = np.radians(hue_shift(h))
+        ab = np.column_stack([ab[:, 0] * np.cos(t) - ab[:, 1] * np.sin(t),
+                              ab[:, 0] * np.sin(t) + ab[:, 1] * np.cos(t)])
     return np.column_stack([L, ab])
 
 
