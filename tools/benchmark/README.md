@@ -84,3 +84,7 @@ better. Otherwise it is reverted, however good the idea sounded.
   surfaced are not judged yet and are left out -- judge them next, then
   refit (more orange/black/pink examples) and re-sweep.
 
+- 2026-10-10: judged the 169 tiles the v2 sweep surfaced (1,625 labelled,
+  787 held out). v2 in game, all sweep tiles judged: 27% clearly wrong on
+  page 1 (88/332) vs 50% v1. gold 16, purple 33, black 88; others as above.
+  Next: refit with the new labels, 2-fold CV, no-regression check, re-sweep.
