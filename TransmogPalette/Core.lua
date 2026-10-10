@@ -51,8 +51,11 @@ local function InitDB()
         TransmogPaletteDB.showColorTags = true
     end
 
-    -- Left over from an unreleased build that let the strip be dragged.
-    TransmogPaletteDB.stripPos = nil
+    -- Where the colour strip was dragged to, as a UIParent anchor
+    -- { point, relPoint, x, y }. Nil means the default spot under the search box.
+    if type(TransmogPaletteDB.stripPos) ~= "table" then
+        TransmogPaletteDB.stripPos = nil
+    end
 
     -- Whether the strip shows the general swatches or all of them (the More /
     -- Less button). See Matching.lua.
@@ -1496,6 +1499,12 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         return
     end
 
+    if msg and msg:lower():match("^resetpos") then
+        if ns.ResetStripPosition then ns.ResetStripPosition() end
+        print("|cff44ff44TransmogPalette:|r colour strip moved back under the search box.")
+        return
+    end
+
     if msg and msg:lower():match("^debug") then
         -- Localizes count-vs-results disagreement: `passing` is what the
         -- addon believes matches, `handed to frame` is what it actually
@@ -1528,7 +1537,8 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     print("  |cffffff00/tmpalette grain|r - how coarse the roll colours are (fine, medium, coarse, broad)")
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
-    print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")    if total > 0 then
+    print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")
+    print("  |cffffff00/tmpalette resetpos|r - put the colour strip back after dragging it")    if total > 0 then
         print(("  colour data covers %d of the %d appearances currently listed."):format(withData, total))
     end
 end

@@ -417,8 +417,9 @@ local function LayoutPanel(panel)
 
     -- Fitted to the parent rather than fixed: at broad grain 11 swatches are one
     -- row, but fine grain is 39 and has to wrap inside Blizzard's frame.
-    local parent = panel:GetParent()
-    local available = parent and parent:GetWidth() or 0
+    -- Measured against the item list, not the parent: the strip floats on
+    -- UIParent so it can be dragged anywhere (see "Floating" below).
+    local available = panel.host and panel.host:GetWidth() or 0
     if not available or available < 120 then available = 440 end
     local columns = math.floor((available - 2 * PANEL_INSET) / (SWATCH_SIZE + SWATCH_GAP))
     columns = math.max(MIN_COLUMNS, math.min(MAX_COLUMNS, columns))
@@ -490,12 +491,42 @@ local function ToggleGrain()
     RefreshAll()
 end
 
-local function CreatePanel(name, parent, anchorFrame)
-    local panel = CreateFrame("Frame", name, parent, "BackdropTemplate")
-    -- Opaque, because the strip unavoidably sits in front of Blizzard's own
-    -- labels and buttons and there is no free space in this frame to move it
-    -- to. Floating unbacked swatches read as a rendering fault; a bordered
-    -- panel reads as something deliberately on top.
+-- === Floating ===
+--
+-- The strip's default spot, under the search box, covers the top row of the
+-- appearance grid, so it can be dragged anywhere by its background. It is
+-- parented to UIParent rather than to the item list for that reason: a child
+-- of the list could be clipped at the list's edges, and could not be parked
+-- beside the Transmogrifier at all. Visibility follows the list instead (see
+-- ns.RegisterColorPanel).
+--
+-- The saved position is a plain UIParent anchor. Nil means the default spot,
+-- which stays attached to the search box and so follows Blizzard's layout.
+
+local function PlaceStrip(panel)
+    panel:ClearAllPoints()
+    local pos = ns.state and ns.state.stripPos
+    if pos then
+        panel:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    elseif panel.anchorFrame then
+        panel:SetPoint("TOPRIGHT", panel.anchorFrame, "BOTTOMRIGHT", 0, -6)
+    else
+        panel:SetPoint("TOPRIGHT", panel.host, "TOPRIGHT", -20, -40)
+    end
+end
+
+function ns.ResetStripPosition()
+    ns.state.stripPos = nil
+    for _, panel in ipairs(ns.panels) do PlaceStrip(panel) end
+end
+
+local function CreatePanel(name, host, anchorFrame)
+    local panel = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
+    panel.host = host
+    panel.anchorFrame = anchorFrame
+    -- Opaque, because wherever it is dragged the strip sits in front of
+    -- something. Floating unbacked swatches read as a rendering fault; a
+    -- bordered panel reads as something deliberately on top.
     panel:SetBackdrop({
         bgFile = "Interface/Tooltips/UI-Tooltip-Background",
         edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
@@ -503,16 +534,29 @@ local function CreatePanel(name, parent, anchorFrame)
         insets = { left = 3, right = 3, top = 3, bottom = 3 },
     })
     panel:SetBackdropColor(0.05, 0.05, 0.05, 0.96)
-    if anchorFrame then
-        panel:SetPoint("TOPRIGHT", anchorFrame, "BOTTOMRIGHT", 0, -6)
-    else
-        panel:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -20, -40)
-    end
     panel:SetFrameStrata("HIGH")
     -- The strip sits over the appearance grid, so it has to swallow clicks on
     -- its own background. Without this a click on the gap between two swatches
     -- falls through and selects whatever appearance is underneath.
     panel:EnableMouse(true)
+
+    -- Dragged by any part of the panel that isn't a control: the swatches and
+    -- buttons take their own clicks, so a drag can only start on the backdrop.
+    panel:SetMovable(true)
+    panel:SetClampedToScreen(true)
+    panel:RegisterForDrag("LeftButton")
+    panel:SetScript("OnDragStart", panel.StartMoving)
+    panel:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        -- StartMoving marks a named frame as user-placed, which hands its
+        -- position to the client's layout cache. This file owns the position,
+        -- and two owners would fight after a /tmpalette resetpos.
+        self:SetUserPlaced(false)
+        local point, _, relPoint, x, y = self:GetPoint(1)
+        ns.state.stripPos = { point, relPoint, x, y }
+        PlaceStrip(self)
+    end)
+    PlaceStrip(panel)
 
     panel.Label = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     panel.Label:SetPoint("TOPLEFT", panel, "TOPLEFT", PANEL_INSET, -PANEL_INSET)
@@ -531,6 +575,7 @@ local function CreatePanel(name, parent, anchorFrame)
         if total > 0 and withData < total then
             GameTooltip:AddLine(("Colour data for %d of %d shown"):format(withData, total), 1, 0.5, 0.5)
         end
+        GameTooltip:AddLine("Drag the panel to move it. /tmpalette resetpos puts it back.", 0.6, 0.6, 0.6, true)
         GameTooltip:Show()
     end)
     panel.LabelHit:SetScript("OnLeave", GameTooltip_Hide)
@@ -605,11 +650,17 @@ end
 -- Called by Core.lua once the Transmogrifier frame exists. Creates one strip
 -- anchored near `anchorFrame` inside `parent`, and registers `refreshFn` to be
 -- called whenever the selection changes so the filter gets re-applied.
-function ns.RegisterColorPanel(parent, anchorFrame, refreshFn)
-    local panel = CreatePanel("TransmogPalettePanel" .. (#ns.panels + 1), parent, anchorFrame)
+function ns.RegisterColorPanel(host, anchorFrame, refreshFn)
+    local panel = CreatePanel("TransmogPalettePanel" .. (#ns.panels + 1), host, anchorFrame)
     table.insert(ns.panels, panel)
     if refreshFn then
         table.insert(refreshCallbacks, refreshFn)
     end
+    -- Not a child of the list, so it has to be told when the list comes and
+    -- goes -- closing the Transmogrifier or switching to the Sets tab must
+    -- take the strip with it.
+    host:HookScript("OnShow", function() panel:Show() end)
+    host:HookScript("OnHide", function() panel:Hide() end)
+    panel:SetShown(host:IsVisible())
     LayoutPanel(panel)
 end
