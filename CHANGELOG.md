@@ -15,10 +15,6 @@ and shifted in hue. Coloured and grey are kept strictly apart, so a faintly
 tinted plate doesn't turn up under blue, and a blue robe with grey trim doesn't
 turn up under grey.
 
-Checked against screenshots of the Transmogrifier across every slot, the first
-page of results for a colour is right **82%** of the time, up from 46% in 1.2.1,
-and the filter finds noticeably more of what it should.
-
 **Best matches first.** Results are sorted: pieces that are mostly the colour
 come first, pieces with a trim of it come last, instead of the collection's own
 order.
