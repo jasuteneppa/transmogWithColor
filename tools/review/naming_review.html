@@ -58,7 +58,9 @@ body.no-chips .tile .chip { visibility: hidden; }
 .tile button.flag:focus-visible { outline: 2px solid var(--accent); }
 .tile.flagged button.flag { color: var(--bg); background: var(--warn); }
 .tile.flagged img { opacity: .35; }
-.divider { width: 4px; align-self: stretch; min-height: 118px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 3px #d9a74a33; }
+.tile .side-tag { font: 600 11px/1.6 var(--body); letter-spacing: .04em; text-transform: uppercase; text-align: center; border-radius: 4px; color: var(--bg); background: var(--side); }
+.divider { width: 30px; align-self: stretch; min-height: 150px; border-radius: 6px; background: var(--accent); color: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; }
+.divider span { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
 
 .strip-foot { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
 .strip-foot button.reset { font: 500 13px var(--body); color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; cursor: pointer; }
@@ -73,7 +75,7 @@ body.no-chips .tile .chip { visibility: hidden; }
 <div class="wrap">
   <header>
     <h1>Transmog Colour Boundaries</h1>
-    <p class="lede">Each row runs from one colour to its neighbour, using items you captured in the Transmogrifier. The gold line is where crowd-sourced colour naming splits them. <b>Click the first item that belongs to the right-hand colour</b> to move the line. The thin bar under each tile is the colour the addon measured for it.</p>
+    <p class="lede">Each row runs from one colour to its neighbour, using items you captured in the Transmogrifier. The label under every tile says which colour it is filed as right now, and the gold marker shows where the row switches. It starts where crowd-sourced colour naming would switch. <b>Click the first item that looks like the second colour</b>: it and everything after it get the second colour, everything before it keeps the first. The thin bar above each label is the colour the addon measured for that item.</p>
     <p class="lede">If an item fits neither colour, or the addon measured the wrong part of it, mark it with <b>✕</b> in its corner. If a row has no clean split, tick that box and say why in the note.</p>
     <div class="bar">
       <span class="progress" id="progress"><span>0</span> of 0 reviewed</span>
@@ -106,8 +108,14 @@ function render(strip) {
   const sec = document.getElementById("s-" + strip.id);
   const ramp = sec.querySelector(".ramp");
   ramp.textContent = "";
+  const marker = () => {
+    const m = document.createElement("div");
+    m.className = "divider"; m.setAttribute("role", "separator");
+    m.innerHTML = `<span class="mk-a">← ${cap(strip.a)}</span><span class="mk-b">${cap(strip.b)} →</span>`;
+    return m;
+  };
   strip.items.forEach((it, i) => {
-    if (i === st.cut) ramp.append(Object.assign(document.createElement("div"), { className: "divider", role: "separator" }));
+    if (i === st.cut) ramp.append(marker());
     const side = i < st.cut ? strip.a : strip.b;
     const t = document.createElement("div");
     t.className = "tile" + (st.flags.has(it.vid) ? " flagged" : "");
@@ -126,10 +134,12 @@ function render(strip) {
     flag.onclick = e => { e.stopPropagation(); st.flags.has(it.vid) ? st.flags.delete(it.vid) : st.flags.add(it.vid); touch(strip); };
     const chip = document.createElement("div");
     chip.className = "chip"; chip.style.background = it.chip;
-    t.append(pick, flag, chip);
+    const tag = document.createElement("div");
+    tag.className = "side-tag"; tag.textContent = cap(side);
+    t.append(pick, flag, chip, tag);
     ramp.append(t);
   });
-  if (st.cut === strip.items.length) ramp.append(Object.assign(document.createElement("div"), { className: "divider", role: "separator" }));
+  if (st.cut === strip.items.length) ramp.append(marker());
   const left = st.cut, right = strip.items.length - st.cut;
   sec.querySelector(".split-text").innerHTML =
     `<b>${left}</b> ${strip.a} · <b>${right}</b> ${strip.b}` + (st.cut !== strip.defaultCut ? ` · moved ${st.cut > strip.defaultCut ? "+" : ""}${st.cut - strip.defaultCut} from the survey line` : " · survey line");
@@ -172,7 +182,8 @@ async function save(strip) {
 }
 
 function progress() {
-  const n = DATA.strips.filter(s => state[s.id].reviewed).length;
+  // Guarded: render() runs while strips are still being built.
+  const n = DATA.strips.filter(s => state[s.id] && state[s.id].reviewed).length;
   document.getElementById("progress").innerHTML = `<span>${n}</span> of ${DATA.strips.length} reviewed`;
 }
 
@@ -180,6 +191,8 @@ function build() {
   const root = document.getElementById("strips");
   for (const strip of DATA.strips) {
     state[strip.id] = { cut: strip.defaultCut, unsure: false, note: "", flags: new Set(), reviewed: false };
+  }
+  for (const strip of DATA.strips) {
     const sec = document.createElement("section");
     sec.className = "strip"; sec.id = "s-" + strip.id;
     sec.innerHTML = `
