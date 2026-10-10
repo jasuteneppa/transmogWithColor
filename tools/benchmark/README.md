@@ -76,3 +76,11 @@ better. Otherwise it is reverted, however good the idea sounded.
   current matcher, tuning half: 50% of judged page-1 tiles are clearly the
   wrong colour. gold 3%, green 3%, purple 26%, red 38%, white 38%, blue 55%,
   gray 58%, pink 67%, brown 77%, black 92%, orange 100%.
+- 2026-10-10: match_v2 (fit_v2.py, one swatch per colour, tuning half) in
+  game on branch experiment/match-v2. Page 1 clearly wrong: 23% (70/298
+  judged) vs 50% for v1. gray 28 (was 58), red 22 (38), brown 44 (77),
+  blue 17 (55), gold 7, green 0, purple 30 (26, slightly worse), white 35,
+  black 86, orange/pink too few judged. CAVEAT: 169 tiles this sweep
+  surfaced are not judged yet and are left out -- judge them next, then
+  refit (more orange/black/pink examples) and re-sweep.
+
