@@ -394,6 +394,17 @@ end
 -- the list. Safe to call with the Transmogrifier closed -- it no-ops.
 ns.RefreshFilter = RefreshTransmog
 
+-- Development (Capture.lua's sweep): back to page 1, and how many appearances
+-- the last filter pass kept.
+function ns.ResetTransmogPage()
+    local c = GetPagingControls(GetTransmogItemsFrame())
+    if c and c.SetCurrentPage then pcall(c.SetCurrentPage, c, 1) end
+end
+
+function ns.LastFilteredCount()
+    return lastFilteredCount
+end
+
 -- Walks an object and its metatable chain for method names. Frame methods live
 -- on the metatable's __index, not on the object, so pairs(frame) alone finds
 -- almost nothing.

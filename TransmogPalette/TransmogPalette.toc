@@ -17,3 +17,4 @@ Core.lua
 ColorPicker.lua
 Randomizer.lua
 ColorTags.lua
+Capture.lua

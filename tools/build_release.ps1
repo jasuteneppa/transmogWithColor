@@ -35,7 +35,11 @@ $stage = Join-Path ([IO.Path]::GetTempPath()) ("tmpalette-" + [Guid]::NewGuid().
 $dest  = Join-Path $stage "TransmogPalette"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 
-Copy-Item $tocPath $dest
+# Development-only files stay in the .toc for the live junctioned copy but are
+# dropped from the release, .toc line included.
+$devOnly = @("Capture.lua")
+$listed = $listed | Where-Object { $devOnly -notcontains $_ }
+$toc | Where-Object { $devOnly -notcontains $_.Trim() } | Set-Content (Join-Path $dest "TransmogPalette.toc") -Encoding ASCII
 foreach ($f in $listed) { Copy-Item (Join-Path $addon $f) $dest }
 foreach ($extra in @("LICENSE", "CHANGELOG.md")) {
     $p = Join-Path $root $extra

@@ -94,6 +94,15 @@ local function ClearAll()
     AfterSelectionChange()
 end
 
+-- Development (Capture.lua's sweep): replace the whole filter at once. Takes
+-- the primaryColors set and accent as stored, so a saved filter goes straight
+-- back in afterwards.
+function ns.SetFilterForCapture(primarySet, accent)
+    ns.state.primaryColors = primarySet or {}
+    ns.state.accentColor = accent
+    AfterSelectionChange()
+end
+
 local function SelectedCount()
     local n = 0
     for _ in pairs(ns.state.primaryColors) do n = n + 1 end

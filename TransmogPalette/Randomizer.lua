@@ -1963,6 +1963,16 @@ function ns.RegisterRandomizer(parentFrame)
 end
 
 ns.RandomizerSlots = SLOTS
+
+-- Development (Capture.lua's sweep): show a slot's appearances exactly as
+-- clicking its button does. OnSelect is the click minus the sound.
+function ns.SelectTransmogSlot(invSlot)
+    ScanForSlotButtons()
+    local entry = discovered[invSlot]
+    local btn = entry and entry.frame
+    if not (btn and btn.OnSelect) then return false end
+    return (pcall(btn.OnSelect, btn))
+end
 ns.RollRandomOutfit = RollAll
 
 -- For /tmpalette slots. Returns collected-candidate count, how many of those
