@@ -1,43 +1,48 @@
 # Changelog
 
-## 1.2.2
+## 1.3.0
 
-**Weapons have colours now.** Nearly a thousand appearances had no colour data
-at all — almost every one of them a weapon, plus some cloaks, helms and
-shoulders. They were invisible to every colour filter and never rolled, and
-because a filter can only ever show you what it let *through*, there was no way
-to notice. Coverage goes from 98.3% to **99.75%**.
+**Colour filters match what you actually see.** Until now every appearance got
+exactly one colour name, and the filter worked by name. A lot of WoW armour
+doesn't have one name: a red-and-gold gauntlet is both, shaded red leather got
+called brown, and metal took whatever its highlights happened to be. No amount
+of moving the boundaries between names could fix that.
 
-The cause: a weapon's texture is baked into its model rather than referenced the
-way armour's is, and the extractor only knew the armour route. Wirt's Last Leg,
-Aurastone Hammer, The Nexus Key and about 965 others go back as far as Classic,
-so this was never about a recent patch. What's left without data is mostly
-things that genuinely have no colour — ammo, and the "hide this slot" entries.
+So names are gone. A swatch is now a colour, and an appearance matches it by how
+much of its surface is *close* to that colour — as it looks on screen in the
+Transmogrifier, not as it sits in the texture file, which runs noticeably darker
+and shifted in hue. Coloured and grey are kept strictly apart, so a faintly
+tinted plate doesn't turn up under blue, and a blue robe with grey trim doesn't
+turn up under grey.
 
-**Orange and gold are one colour now.** They were the same hue in practice —
-WoW's gold sits right where orange does — so the two swatches returned
-much the same armour, and real gold mostly landed under *orange*, leaving the
-gold swatch holding 2,400 appearances that largely weren't gold. One amber
-bucket of 10,126 replaces them. It's still smaller than brown or red.
+Checked against screenshots of the Transmogrifier across every slot, the first
+page of results for a colour is right **82%** of the time, up from 46% in 1.2.1,
+and the filter finds noticeably more of what it should.
 
-The gold swatch also stops returning olive and chartreuse. Its range reached far
-enough into yellow-green to pull in 807 mossy pieces; those now group with
-green, where they look like they belong.
+**Best matches first.** Results are sorted: pieces that are mostly the colour
+come first, pieces with a trim of it come last, instead of the collection's own
+order.
 
-**Less armour is filed as black or grey.** Each appearance can now record four
-colours instead of three, and that turns out to matter for pieces that aren't
-grey at all: a colour that didn't fit took its share of the item with it, and
-once enough colour had been dropped the piece fell through into greyscale. Some
-900 appearances move out of black and grey and into a colour they visibly are —
-teal-tusked helms, cyan-spiked shoulders, a lavender headpiece. Greyscale drops
-from 15.5% of the game to 13.9%; only 3.7% of appearances truly have no colour.
+**A new palette.** The strip still shows eleven broad colours — black, gray,
+white, red, orange, brown, gold, green, blue, purple, pink — and **More** now
+opens twenty, measured from the game's own armour rather than picked by hand:
+maroon, bronze, jade, teal, cyan, slate, violet and the rest. A broad swatch
+matches any of its shades.
 
-The extra colour costs about 3 MB of memory while the Transmogrifier is open.
+**Swatches on every tile.** Each appearance shows the two swatches it matches
+best in its corner, filter or no filter, so you can see why something turned up.
+Turn them off with the **Swatches** checkbox or `/tmpalette swatches`.
 
-**Your saved colours are cleared once more.** The "orange" bucket no longer
-exists, so a saved pick holding it would quietly match nothing. Hand corrections
-made with the override picker are keyed to the appearance itself and survive, as
-always.
+**The strip can be moved.** Drag it by its background; it remembers where you
+put it. `/tmpalette resetpos` puts it back under the search box.
+
+**Your saved colour picks are cleared once.** The old colour names don't exist
+any more, so a saved pick would quietly match nothing. Hand corrections made
+with the override picker still apply, and new ones pick from the new swatches.
+
+The roller is unchanged in this release and rolls exactly as it did in 1.2.1.
+
+Marked compatible with 12.1.0 and 12.1.5.
 
 ## 1.2.1
 

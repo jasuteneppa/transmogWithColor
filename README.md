@@ -5,11 +5,16 @@ appearances by colour, and roll random colour-matched outfits.
 
 ## What it does
 
-**Filter by colour.** At the Transmogrifier, a row of swatches appears above the
-appearance list. Pick up to three main colours — they're OR'd, so "red or blue
-or green" — plus an optional accent colour matched against the item's second
-colour. The picker only offers colours that actually occur in the slot you're
-looking at, and each swatch shows exactly how many appearances it will return.
+**Filter by colour.** At the Transmogrifier, a strip of eleven colour swatches
+appears under the search box; **More** opens all twenty shades. Click swatches
+to filter — several at once are OR'd, "red or blue or green" — and click again
+to drop one. Each swatch shows how many appearances it will return.
+
+An appearance matches a swatch by how much of its surface is *close* to that
+colour as it looks on screen, and results are sorted best match first: pieces
+that are mostly the colour lead, pieces with a trim of it come last. Each tile
+shows the two swatches it matches best in its corner. The strip can be dragged
+anywhere by its background.
 
 **Roll a random outfit.** Every gear slot gets a small colour swatch beside it.
 Assign colours to the slots you care about, press **Roll**, and the addon stages
@@ -27,7 +32,9 @@ Blizzard's own Apply button, so re-roll as often as you like.
 | `/tmpalette` | Help |
 | `/tmpalette roll` | Roll, without clicking the button |
 | `/tmpalette grain fine\|medium\|coarse\|broad` | How coarsely the roller groups colours |
-| `/tmpalette colorfirst <0-1>` | How much colour keeps an item out of black/grey/white |
+| `/tmpalette colorfirst <0-1>` | How much colour keeps an item out of black/grey/white when rolling |
+| `/tmpalette swatches` | Show or hide the swatches on each appearance tile |
+| `/tmpalette resetpos` | Put the colour strip back under the search box |
 | `/tmpalette slots` | How many appearances each slot can draw from |
 
 ### About `grain`
@@ -65,7 +72,12 @@ nested inside another one.
 
 WoW's addon API cannot read texture pixels at runtime, so an addon can't work
 out an appearance's colour in-game. Colours are extracted **offline** and
-shipped as a lookup table (`ColorData.lua`, 64,722 appearances).
+shipped as a lookup table (`ColorData.lua`).
+
+The table shipped in 1.3.0 is still the 1.2.1 one — 63,742 appearances with up
+to three colours each. The pipeline described below has moved on since (four
+colours, baked weapon textures, 64,722 appearances), and those changes reach
+players the next time the table is regenerated.
 
 The pipeline resolves each appearance to its **real worn texture** — not its
 item icon, which is hand-drawn and unreliable; "Rainy Day Coat" has gold icon

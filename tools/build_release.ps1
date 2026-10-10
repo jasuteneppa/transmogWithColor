@@ -45,7 +45,18 @@ foreach ($extra in @("LICENSE", "CHANGELOG.md")) {
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $zip = Join-Path $OutDir "TransmogPalette-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path $dest -DestinationPath $zip -CompressionLevel Optimal
+# Not Compress-Archive: on Windows PowerShell 5.1 it writes entry names with
+# backslashes, which the zip format forbids. Windows copes; macOS and Linux
+# extractors can produce a flat file literally named "TransmogPalette\Core.lua".
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+$out = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem $dest -File | Sort-Object Name | ForEach-Object {
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $out, $_.FullName, "TransmogPalette/$($_.Name)",
+            [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+} finally { $out.Dispose() }
 Remove-Item $stage -Recurse -Force
 
 $size = (Get-Item $zip).Length / 1MB

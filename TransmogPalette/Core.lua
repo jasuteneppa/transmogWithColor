@@ -1538,7 +1538,8 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
     print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")
-    print("  |cffffff00/tmpalette resetpos|r - put the colour strip back after dragging it")    if total > 0 then
+    print("  |cffffff00/tmpalette resetpos|r - put the colour strip back after dragging it")
+    if total > 0 then
         print(("  colour data covers %d of the %d appearances currently listed."):format(withData, total))
     end
 end
