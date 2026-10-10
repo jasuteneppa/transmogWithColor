@@ -1,0 +1,18 @@
+# Release zips are built from the tree, not tracked
+dist/
+backups/
+
+# Generated / cached data from the color pipeline (regenerable, very large)
+tools/texture_cache/
+tools/model_cache/
+tools/db2_cache/
+tools/*.bin
+tools/*.pkl
+tools/__pycache__/
+__pycache__/
+
+# Old ColorData snapshots and experiment outputs
+*.bak
+*.bak-*
+*.geomfix
+*.reprofile

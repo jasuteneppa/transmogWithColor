@@ -1,0 +1,16 @@
+## Interface: 120100
+## Title: Transmog Palette
+## Notes: Filter transmog appearances by colour, and roll random colour-matched outfits.
+## Author: sprsk
+## Version: 1.2.1
+## X-License: MIT
+## X-Curse-Project-ID: 1645616
+## X-Category: Roleplay, Miscellaneous
+## SavedVariables: TransmogPaletteDB
+## IconTexture: Interface\Icons\INV_Misc_Dye_01
+
+Palette.lua
+ColorData.lua
+Core.lua
+ColorPicker.lua
+Randomizer.lua
