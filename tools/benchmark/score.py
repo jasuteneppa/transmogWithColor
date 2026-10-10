@@ -62,6 +62,13 @@ def current_method(data, palette_path=HERE.parent / "palette.json"):
     return returns
 
 
+def v2_method(data, path):
+    import match_v2 as mv
+    m = mv.Matcher(mv.load(path), data)
+    m.rank = m.rank  # sortable, like current_method
+    return m
+
+
 def score(method, labels, colours):
     rows = {}
     for c in colours:
@@ -122,13 +129,19 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--holdout", action="store_true", help="score the held-back half (do this once, at the end)")
     ap.add_argument("--game", action="store_true", help="also compute whole-game unfindable (slow)")
+    ap.add_argument("--candidate", action="append", default=[], help="a match_v2 palette file to score too")
+    ap.add_argument("--fold", type=int, choices=(0, 1), help="score only this fold of the tuning half")
     args = ap.parse_args()
 
     spec = json.loads((HERE / "labels.json").read_text())
     colours = spec["colours"]
     labels = {int(v): l for v, l in spec["labels"].items() if l["holdout"] == args.holdout}
+    if args.fold is not None:
+        from fit_v2 import fold_of
+        labels = {v: l for v, l in labels.items() if fold_of(v) == args.fold}
     data = nc.parse()
     methods = [("1.2.1", legacy_method(data)), ("current", current_method(data))]
+    methods += [(Path(c).stem[-8:], v2_method(data, c)) for c in args.candidate]
 
     print(f"{'holdout' if args.holdout else 'tuning'} half: {len(labels)} labelled appearances\n")
     results = [(name, *score(m, labels, colours)) for name, m in methods]

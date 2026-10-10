@@ -173,7 +173,8 @@ SweepStep = function()
     ns.SetFilterForCapture({ [g.key] = { key = g.key } }, nil)
     ns.ResetTransmogPage()
     After(PAGE_SETTLE, function()
-        local meta = { slot = SWEEP_SLOTS[s.si], filter = g.key, matched = ns.LastFilteredCount() or 0 }
+        local meta = { slot = SWEEP_SLOTS[s.si], filter = g.key, matched = ns.LastFilteredCount() or 0,
+            matcher = ns.MatchConstants.version or "v1" }
         local started = meta.matched > 0 and ns.CapturePage(meta, function(ok)
             if ok then s.captured = s.captured + 1 end
             After(0.3, SweepStep)

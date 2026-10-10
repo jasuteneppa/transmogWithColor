@@ -24,10 +24,15 @@ LUA = Path.home() / "AppData" / "Local" / "Programs" / "Lua" / "bin" / "lua.exe"
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=300)
+    ap.add_argument("--v2", help="a match_v2 palette (the one exported to Swatches.lua)")
     args = ap.parse_args()
 
     data = nc.parse()
     palette = json.loads((TOOLS / "palette.json").read_text(encoding="utf-8"))
+    if args.v2:
+        import match_v2 as mv
+        v2 = json.loads(Path(args.v2).read_text(encoding="utf-8"))
+        palette = v2["swatches"]
     rng = np.random.default_rng(5)
     vids = rng.choice(sorted(data), args.n, replace=False).tolist()
 
@@ -38,8 +43,13 @@ def main():
     for line in out.strip().splitlines():
         vid, *vals = line.split()
         lua = np.array([float(v) for v in vals])
-        py = np.array([me.texture_score(data[int(vid)], np.array(p["lab"])) / p["min_score"]
-                       for p in palette])
+        if args.v2:
+            cl = mv.Clusters(data[int(vid)])
+            py = np.array([mv.raw_score(cl, np.array(p["lab"]), v2["neutral_k"]) / p["min_score"]
+                           for p in v2["swatches"]])
+        else:
+            py = np.array([me.texture_score(data[int(vid)], np.array(p["lab"])) / p["min_score"]
+                           for p in palette])
         worst = max(worst, float(np.max(np.abs(lua - py))))
         # What matters is the decision: does it match (>= 1) the same way?
         flips += int(np.sum((lua >= 1) != (py >= 1)))
