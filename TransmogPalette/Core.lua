@@ -1511,6 +1511,12 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         return
     end
 
+    if msg and msg:lower():match("^capture") then
+        -- Development: screenshot calibration, see Capture.lua.
+        if ns.CaptureCommand then ns.CaptureCommand(msg:match("^%S+%s*(.*)")) end
+        return
+    end
+
     if msg and msg:lower():match("^resetpos") then
         if ns.ResetStripPosition then ns.ResetStripPosition() end
         print("|cff44ff44TransmogPalette:|r colour strip moved back under the search box.")

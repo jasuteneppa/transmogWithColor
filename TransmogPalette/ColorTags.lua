@@ -54,9 +54,12 @@ local itemsFrame
 local ticker
 local overlays = {}      -- tile -> overlay frame, so tiles are decorated once
 local lastTileCount = 0
+-- Held off for a moment by the capture tool (Capture.lua) so the chips are not
+-- in the screenshot: they would be read as the item's own pixels.
+local suspended = false
 
 local function Enabled()
-    return TransmogPaletteDB and TransmogPaletteDB.showColorTags
+    return TransmogPaletteDB and TransmogPaletteDB.showColorTags and not suspended
 end
 
 -- Pooled tiles: resolve from the frame every time, never cache the result.
@@ -243,6 +246,34 @@ local function Start()
         end
         Refresh()
     end)
+end
+
+function ns.SuspendColorTags(on)
+    suspended = on and true or false
+    if suspended then
+        for _, overlay in pairs(overlays) do pcall(overlay.Hide, overlay) end
+    elseif Enabled() then
+        Refresh()
+    end
+end
+
+-- Every appearance tile currently on screen, as { visualID, left, bottom,
+-- width, height } in UNSCALED screen units -- the frame's rect times its
+-- effective scale -- so the capture script can map them onto a screenshot of
+-- any resolution by proportion alone.
+function ns.VisibleTileRects()
+    local out = {}
+    for _, tile in ipairs(Tiles()) do
+        local vid = VisualIDOf(tile)
+        if vid and tile:IsVisible() then
+            local left, bottom, width, height = tile:GetRect()
+            if left then
+                local s = tile:GetEffectiveScale()
+                out[#out + 1] = { vid, left * s, bottom * s, width * s, height * s }
+            end
+        end
+    end
+    return out
 end
 
 function ns.RegisterColorTags(ic)
