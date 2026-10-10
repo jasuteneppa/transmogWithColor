@@ -91,6 +91,10 @@ def closeness(lab, target):
 #     seams are not "black", and black armour with gold trim ranks below
 #     plain black armour.
 COLOR_C_LO, COLOR_C_HI = 8.0, 18.0
+# How hard an item's coloured share pushes it out of the grey swatches:
+# the grey score is scaled by (1 - K * coloured share), floored at 0. K = 1 is
+# plain proportion.
+NEUTRAL_COLOUR_K = 2.0  # scorecard: black right 55% -> 61%, gray 67 -> 70, white 80 -> 94, nothing worse
 
 
 def colourfulness(lab, achromatic):
@@ -110,7 +114,7 @@ def texture_score(ranks, target):
     close = closeness(lab, target)
     if np.hypot(target[1], target[2]) < NEUTRAL_TARGET_CHROMA:
         coloured_share = (w * m).sum() / total
-        return float((w * (1 - m) * close).sum() / total * (1 - coloured_share))
+        return float((w * (1 - m) * close).sum() / total * max(0.0, 1 - NEUTRAL_COLOUR_K * coloured_share))
     return float((w * m * close).sum() / total)
 
 

@@ -9,7 +9,7 @@ ns.MatchConstants = {
     gain = 0.95, offset = 15.8, chroma = 1.13,
     kL = 0.5, sigma = 12.0,
     neutralTargetChroma = 10.0, neutralKTint = 2.5,
-    colorCLo = 8.0, colorCHi = 18.0,
+    colorCLo = 8.0, colorCHi = 18.0, neutralColourK = 2.0,
     -- texture -> screen hue shift: { sector centre, degrees }
     hueShift = { { 15, 5.0 }, { 45, 11.7 }, { 75, 5.4 }, { 105, -1.4 }, { 135, -2.1 }, { 165, -0.9 }, { 195, -0.5 }, { 255, -14.9 }, { 285, -11.9 }, { 315, -6.1 }, { 345, 1.0 } },
 }

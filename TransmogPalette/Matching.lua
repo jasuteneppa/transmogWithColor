@@ -165,7 +165,9 @@ local function Score(clusters, sw)
     end
     if total <= 0 then return 0 end
     if sw.neutral then
-        return (sum / total) * (1 - coloured / total)
+        -- Coloured surface pushes an item out of the grey swatches harder
+        -- than its plain share: see NEUTRAL_COLOUR_K in tools/match_eval.py.
+        return (sum / total) * math.max(0, 1 - C.neutralColourK * coloured / total)
     end
     return sum / total
 end

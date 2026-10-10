@@ -59,7 +59,7 @@ def main():
         f"    gain = {gain}, offset = {offset}, chroma = {chroma},",
         f"    kL = {me.K_L}, sigma = {me.SIGMA},",
         f"    neutralTargetChroma = {me.NEUTRAL_TARGET_CHROMA}, neutralKTint = {me.NEUTRAL_K_TINT},",
-        f"    colorCLo = {me.COLOR_C_LO}, colorCHi = {me.COLOR_C_HI},",
+        f"    colorCLo = {me.COLOR_C_LO}, colorCHi = {me.COLOR_C_HI}, neutralColourK = {me.NEUTRAL_COLOUR_K},",
         "    -- texture -> screen hue shift: { sector centre, degrees }",
         "    hueShift = { " + ", ".join(f"{{ {c}, {s} }}" for c, s in cc.HUE_SHIFT) + " },",
         "}",
