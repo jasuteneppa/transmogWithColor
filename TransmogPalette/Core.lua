@@ -44,6 +44,20 @@ local function InitDB()
         TransmogPaletteDB.devOverrides = false
     end
 
+    -- Colour chips on every appearance tile (ColorTags.lua). On by default:
+    -- seeing what the addon thinks each piece is, filter or no filter, is how a
+    -- player learns what a swatch will return before clicking it.
+    if type(TransmogPaletteDB.showColorTags) ~= "boolean" then
+        TransmogPaletteDB.showColorTags = true
+    end
+
+    -- Where the colour strip was dragged to, relative to the Transmogrifier's
+    -- item list. Nil means the default spot under the search box.
+    -- { point, relPoint, x, y }.
+    if type(TransmogPaletteDB.stripPos) ~= "table" then
+        TransmogPaletteDB.stripPos = nil
+    end
+
     -- slotColors store bucket KEYS, and the grain decides what the keys are, so
     -- a grain change makes saved picks mean something else -- or nothing. Same
     -- hazard as CLASSIFIER_VERSION, tracked separately so changing the roll
@@ -804,6 +818,9 @@ local function TryHookTransmog()
     if ns.RegisterRandomizer then
         ns.RegisterRandomizer(TransmogFrame)
     end
+    if ns.RegisterColorTags then
+        ns.RegisterColorTags(ic)
+    end
 
     return true
 end
@@ -1468,6 +1485,38 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         return
     end
 
+    -- "swatches" to players; "tags" was the development name and still works.
+    if msg and (msg:lower():match("^swatches") or msg:lower():match("^tags")) then
+        if not ns.ToggleColorTags then
+            print("|cffff4444TransmogPalette:|r appearance swatches are unavailable (ColorTags.lua did not load).")
+            return
+        end
+        if msg:lower():match("^%a+%s+probe") then
+            if ns.ProbeColorTags then ns.ProbeColorTags() end
+            return
+        end
+        local on, withData, total, tiles = ns.ToggleColorTags()
+        print(("|cff44ff44TransmogPalette:|r appearance swatches %s."):format(
+            on and "|cffffff00ON|r — each tile shows main / accent" or "OFF"))
+        if on then
+            if (tiles or 0) == 0 then
+                print("  |cffff4444No tiles found.|r Open a gear slot so appearances are")
+                print("  listed, then |cffffff00/tmpalette swatches probe|r to see what's there.")
+            end
+            if total > 0 and withData < total then
+                print(("  %d of %d listed appearances have no colour data and show |cffff4444no data|r."):format(
+                    total - withData, total))
+            end
+        end
+        return
+    end
+
+    if msg and msg:lower():match("^resetpos") then
+        if ns.ResetStripPosition then ns.ResetStripPosition() end
+        print("|cff44ff44TransmogPalette:|r colour strip moved back under the search box.")
+        return
+    end
+
     if msg and msg:lower():match("^debug") then
         -- Localizes count-vs-results disagreement: `passing` is what the
         -- addon believes matches, `handed to frame` is what it actually
@@ -1500,6 +1549,8 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     print("  |cffffff00/tmpalette grain|r - how coarse the roll colours are (fine, medium, coarse, broad)")
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
+    print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")
+    print("  |cffffff00/tmpalette resetpos|r - put the colour strip back after dragging it")
     if total > 0 then
         print(("  colour data covers %d of the %d appearances currently listed."):format(withData, total))
     end
