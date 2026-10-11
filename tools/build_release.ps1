@@ -35,7 +35,11 @@ $stage = Join-Path ([IO.Path]::GetTempPath()) ("tmpalette-" + [Guid]::NewGuid().
 $dest  = Join-Path $stage "TransmogPalette"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 
-Copy-Item $tocPath $dest
+# Development-only files stay in the .toc for the live junctioned copy but are
+# dropped from the release, .toc line included.
+$devOnly = @("Capture.lua")
+$listed = $listed | Where-Object { $devOnly -notcontains $_ }
+$toc | Where-Object { $devOnly -notcontains $_.Trim() } | Set-Content (Join-Path $dest "TransmogPalette.toc") -Encoding ASCII
 foreach ($f in $listed) { Copy-Item (Join-Path $addon $f) $dest }
 foreach ($extra in @("LICENSE", "CHANGELOG.md")) {
     $p = Join-Path $root $extra
@@ -45,7 +49,18 @@ foreach ($extra in @("LICENSE", "CHANGELOG.md")) {
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $zip = Join-Path $OutDir "TransmogPalette-$version.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path $dest -DestinationPath $zip -CompressionLevel Optimal
+# Not Compress-Archive: on Windows PowerShell 5.1 it writes entry names with
+# backslashes, which the zip format forbids. Windows copes; macOS and Linux
+# extractors can produce a flat file literally named "TransmogPalette\Core.lua".
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+$out = [IO.Compression.ZipFile]::Open($zip, [IO.Compression.ZipArchiveMode]::Create)
+try {
+    Get-ChildItem $dest -File | Sort-Object Name | ForEach-Object {
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $out, $_.FullName, "TransmogPalette/$($_.Name)",
+            [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+} finally { $out.Dispose() }
 Remove-Item $stage -Recurse -Force
 
 $size = (Get-Item $zip).Length / 1MB

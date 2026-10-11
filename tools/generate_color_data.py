@@ -268,6 +268,9 @@ MAX_CLUSTERS = 4
 # read the default without tripping main()'s `global` declaration.
 DEFAULT_MAX_CLUSTERS = MAX_CLUSTERS
 MIN_CLUSTER_SHARE = 0.05
+# How much of an item's colour its attached 3D piece gets when it also has
+# body textures (see resolve_attachment). Chosen against in-game screenshots.
+ATTACHMENT_SHARE = 0.5
 
 # Achromatic clusters are discounted when RANKING only; the emitted weight
 # stays the true pixel share. Ranking by raw area picks the wrong winner
@@ -444,6 +447,57 @@ def resolve_texture_fdids(visual_id, item_appearance, display_info, matres_by_di
                     fdids.extend(texture_by_matres.get(int(matres_id), []))
 
     return list(dict.fromkeys(fdids))  # dedupe, keep order
+
+
+def resolve_attachment(visual_id, item_appearance, display_info, matres_by_display,
+                       texture_by_matres, model_by_display):
+    """(texture fdids, model fdid) of the 3D piece attached to a body-texture
+    item -- a belt buckle, a scarf or collar on a chest, cuffs on boots and
+    gloves -- or ([], 0) when there is none.
+
+    WHY THIS EXISTS. resolve_texture_fdids reads ModelMaterialResourcesID only
+    when an item has NO body (component) textures. An item with both is drawn
+    as body paint PLUS this model, and the model is often the most visible part:
+    a red-and-gold buckle belt came out "brown", the strap behind the buckle
+    being the only thing sampled. 9,420 appearances (59% of belts, about a third
+    of chests, legs, feet and hands) were in that state.
+
+    The model's own geometry can weight these textures (they use its UV
+    layout), unlike the body textures; see resolve_model_fdid."""
+    app = item_appearance.get(visual_id)
+    if not app:
+        return [], 0
+    display_id = int(app["ItemDisplayInfoID"])
+    di = display_info.get(display_id)
+    if display_id not in matres_by_display or not di:
+        return [], 0
+    fdids = []
+    for key in ("ModelMaterialResourcesID_0", "ModelMaterialResourcesID_1"):
+        matres_id = di.get(key)
+        if matres_id and matres_id != "0":
+            fdids.extend(texture_by_matres.get(int(matres_id), []))
+    fdids = list(dict.fromkeys(fdids))
+    if not fdids:
+        return [], 0
+    model_fdid = 0
+    model_res = di.get("ModelResourcesID_0", "0")
+    if model_by_display and model_res not in ("", "0"):
+        models = model_by_display.get(int(model_res), [])
+        model_fdid = models[0] if models else 0
+    return fdids, model_fdid
+
+
+def scale_profile(profile, factor):
+    """Every count in a profile times `factor`. dominant_colors works on shares,
+    so this changes how much a profile counts against another, nothing else."""
+    for slot in profile["hue"]:
+        for i in range(5):
+            slot[i] *= factor
+    for band in profile["bands"]:
+        for i in range(4):
+            band[i] *= factor
+    profile["total"] *= factor
+    return profile
 
 
 def load_model_files():
@@ -1301,6 +1355,7 @@ def main():
     parser.add_argument("--delay", type=float, default=REQUEST_DELAY_SECONDS, help="Per-worker delay after each network request, in seconds")
     parser.add_argument("--no-geometry", action="store_true", help="Skip visible-geometry weighting and analyse raw texture pixels (the pre-0.5 behaviour)")
     parser.add_argument("--offline", action="store_true", help="Never fetch: rebuild the output from the existing profile cache only. For retuning anything downstream of profiling (cluster ranking, emitted fields, pack format), which needs no new pixels. Appearances with no cached profile are omitted")
+    parser.add_argument("--attachment-share", type=float, default=ATTACHMENT_SHARE, metavar="F", help=f"Share of an item's colour given to its attached 3D piece when it also has body textures (default {ATTACHMENT_SHARE}). Acts after profiling, so --offline retunes it")
     parser.add_argument("--refresh-db2", action="store_true", help="Re-download the DB2 CSVs instead of reusing tools/db2_cache/. REQUIRED after a content patch — otherwise the run reuses the previous patch's tables and silently omits every new appearance")
     parser.add_argument("--peak-window", type=float, default=None, metavar="DEG", help=f"Override HUE_PEAK_WINDOW (default {DEFAULT_HUE_PEAK_WINDOW:.0f}): how far apart two hue peaks must be to count as separate colours. Acts after profiling, so --offline retunes it in seconds. Lower splits gold from brown on the same item; too low fragments one colour into several")
     parser.add_argument("--max-clusters", type=int, default=None, metavar="N", help=f"Override MAX_CLUSTERS (default {DEFAULT_MAX_CLUSTERS}): how many colour clusters an appearance may emit. Acts after profiling, so --offline retunes it. Raising it costs {CLUSTER_BYTES} bytes per appearance and stops a narrow --peak-window draining colour into the greyscale buckets")
@@ -1359,6 +1414,7 @@ def main():
 
     failures = []
     jobs_by_visual = {}
+    attachment_by_visual = {}
     needed = set()
     weighted_visuals = 0
     baked_visuals = 0
@@ -1407,6 +1463,15 @@ def main():
             pairs = [(fdid, model_fdid, i) for i, fdid in enumerate(fdids)]
         jobs_by_visual[visual_id] = pairs
         needed.update(pairs)
+        if not baked:
+            att_fdids, att_model = resolve_attachment(
+                visual_id, item_appearance, display_info, matres_by_display,
+                texture_by_matres, model_by_display
+            )
+            if att_fdids:
+                att_pairs = [(fdid, att_model, i) for i, fdid in enumerate(att_fdids)]
+                attachment_by_visual[visual_id] = att_pairs
+                needed.update(att_pairs)
 
     if baked_visuals:
         print(f"  {baked_visuals} appearances recovered from textures baked into "
@@ -1416,8 +1481,12 @@ def main():
         f"{len(jobs_by_visual)} appearances resolved to {len(needed)} unique texture/model pairs "
         f"({len(failures)} unresolvable)."
     )
+    if attachment_by_visual:
+        print(f"  {len(attachment_by_visual)} appearances also have an attached 3D piece "
+              f"(buckle, scarf, cuffs) whose textures are blended in at "
+              f"{args.attachment_share:.0%} -- see resolve_attachment.")
     pair_to_visuals = {}
-    for visual_id, pairs in jobs_by_visual.items():
+    for visual_id, pairs in list(jobs_by_visual.items()) + list(attachment_by_visual.items()):
         for pair in pairs:
             pair_to_visuals.setdefault(pair, []).append(visual_id)
     if not args.no_geometry:
@@ -1458,6 +1527,20 @@ def main():
             profile = profile_cache.get(pair)
             if profile:
                 add_profiles(pooled, profile)
+        # The attached piece, pooled the same way, then blended in as a fixed
+        # share of the item. Body pixel counts and geometry weights are on
+        # different scales, so each part is normalised first.
+        attached = new_profile()
+        for pair in attachment_by_visual.get(visual_id, []):
+            profile = profile_cache.get(pair)
+            if profile:
+                add_profiles(attached, profile)
+        if attached["total"] and pooled["total"]:
+            share = args.attachment_share
+            scale_profile(pooled, (1 - share) / pooled["total"])
+            add_profiles(pooled, scale_profile(attached, share / attached["total"]))
+        elif attached["total"]:
+            pooled = attached
 
         clusters = dominant_colors(pooled)
         if clusters:

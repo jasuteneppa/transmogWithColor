@@ -1,0 +1,125 @@
+{
+ "neutral_k": 1.5,
+ "swatches": [
+  {
+   "name": "black1",
+   "group": "black",
+   "lab": [
+    14.0,
+    0.0,
+    0.0
+   ],
+   "min_score": 0.3495
+  },
+  {
+   "name": "gray1",
+   "group": "gray",
+   "lab": [
+    56.0,
+    0.0,
+    0.0
+   ],
+   "min_score": 0.052
+  },
+  {
+   "name": "white1",
+   "group": "white",
+   "lab": [
+    90.0,
+    0.0,
+    0.0
+   ],
+   "min_score": 0.0101
+  },
+  {
+   "name": "red1",
+   "group": "red",
+   "lab": [
+    42.81,
+    36.18,
+    24.69
+   ],
+   "min_score": 0.1207
+  },
+  {
+   "name": "orange1",
+   "group": "orange",
+   "lab": [
+    63.39,
+    17.58,
+    41.43
+   ],
+   "min_score": 0.6408
+  },
+  {
+   "name": "brown1",
+   "group": "brown",
+   "lab": [
+    36.35,
+    2.95,
+    12.82
+   ],
+   "min_score": 0.2228
+  },
+  {
+   "name": "gold1",
+   "group": "gold",
+   "lab": [
+    77.01,
+    6.56,
+    48.51
+   ],
+   "min_score": 0.2511
+  },
+  {
+   "name": "green1",
+   "group": "green",
+   "lab": [
+    47.7,
+    -26.29,
+    28.83
+   ],
+   "min_score": 0.0625
+  },
+  {
+   "name": "blue1",
+   "group": "blue",
+   "lab": [
+    51.01,
+    -8.76,
+    -40.35
+   ],
+   "min_score": 0.0928
+  },
+  {
+   "name": "purple1",
+   "group": "purple",
+   "lab": [
+    37.56,
+    23.33,
+    -19.36
+   ],
+   "min_score": 0.205
+  },
+  {
+   "name": "purple2",
+   "group": "purple",
+   "lab": [
+    50.46,
+    51.22,
+    -73.2
+   ],
+   "min_score": 0.095
+  },
+  {
+   "name": "pink1",
+   "group": "pink",
+   "lab": [
+    46.94,
+    41.78,
+    -21.6
+   ],
+   "min_score": 0.4695
+  }
+ ]
+}

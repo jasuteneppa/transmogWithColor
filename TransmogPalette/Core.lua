@@ -3,6 +3,14 @@ local ADDON, ns = ...
 local function InitDB()
     TransmogPaletteDB = TransmogPaletteDB or {}
     TransmogPaletteDB.primaryColors = TransmogPaletteDB.primaryColors or {}
+    -- Excluded colours, a set of swatch keys: a piece that also has any of
+    -- them is left out (see MatchesFilter).
+    TransmogPaletteDB.excludeColors = TransmogPaletteDB.excludeColors or {}
+    -- The roller's own More / Less (Randomizer.lua). Starts as the strip's, so
+    -- pools saved before it existed keep meaning what they meant.
+    if TransmogPaletteDB.rollDetail ~= "all" and TransmogPaletteDB.rollDetail ~= "general" then
+        TransmogPaletteDB.rollDetail = TransmogPaletteDB.matchDetail == "all" and "all" or "general"
+    end
     -- Development-only capture for the offline colour generator; see
     -- RecordVisual. Defaults off, and the table stays empty for players.
     TransmogPaletteDB.exportedVisuals = TransmogPaletteDB.exportedVisuals or {}
@@ -51,11 +59,20 @@ local function InitDB()
         TransmogPaletteDB.showColorTags = true
     end
 
-    -- Where the colour strip was dragged to, relative to the Transmogrifier's
-    -- item list. Nil means the default spot under the search box.
-    -- { point, relPoint, x, y }.
+    -- Where the colour strip was dragged to, as a UIParent anchor
+    -- { point, relPoint, x, y }. Nil means the default spot under the search box.
     if type(TransmogPaletteDB.stripPos) ~= "table" then
         TransmogPaletteDB.stripPos = nil
+    end
+    -- The Collections journal's strip, dragged separately (Core.lua journal hook).
+    if type(TransmogPaletteDB.stripPosJournal) ~= "table" then
+        TransmogPaletteDB.stripPosJournal = nil
+    end
+
+    -- Whether the strip shows the general swatches or all of them (the More /
+    -- Less button). See Matching.lua.
+    if TransmogPaletteDB.matchDetail ~= "general" and TransmogPaletteDB.matchDetail ~= "all" then
+        TransmogPaletteDB.matchDetail = "general"
     end
 
     -- slotColors store bucket KEYS, and the grain decides what the keys are, so
@@ -99,6 +116,18 @@ local function InitDB()
         TransmogPaletteDB.selectedColors = nil  -- old positional slots
         TransmogPaletteDB.hueBucketWidth = nil  -- knob no longer exists
         TransmogPaletteDB.classifierVersion = CLASSIFIER_VERSION
+    end
+
+    -- The FILTER's picks are swatch keys from Matching.lua since 1.3.0, a key
+    -- set unrelated to the buckets above. Stamped separately from
+    -- CLASSIFIER_VERSION so moving the filter does not also wipe the roller's
+    -- slot colours, which still use the buckets.
+    --   1: 1.3.0, closeness matching against the 20-swatch palette
+    local MATCH_VERSION = 1
+    if TransmogPaletteDB.matchVersion ~= MATCH_VERSION then
+        TransmogPaletteDB.primaryColors = {}
+        TransmogPaletteDB.accentColor = nil
+        TransmogPaletteDB.matchVersion = MATCH_VERSION
     end
 
     ns.state = TransmogPaletteDB
@@ -145,80 +174,67 @@ end
 
 local function HasActiveFilter()
     if ns.state.accentColor then return true end
+    if next(ns.state.excludeColors) then return true end
     return next(ns.state.primaryColors) ~= nil
 end
 
 -- === Filter model ===
--- ColorData.lua's ns.ItemColors maps visualID -> a ranked list of up to 3
--- {h, s, v, weight} clusters, dominant first.
+-- Closeness matching (Matching.lua). Every picked main colour is OR'd: an
+-- appearance matches when it scores at least 1 -- its swatch's own cutoff --
+-- against any of them. The optional ACCENT narrows all of them at once ("red
+-- or blue, with gold"): the appearance must ALSO match the accent.
 --
--- Up to three PRIMARY colors, OR'd: an item matches if its dominant (rank 1)
--- color is any of them. Plus one optional ACCENT color matched against the
--- item's rank-2 cluster.
+-- Scores are relative to each swatch's cutoff, so they compare across
+-- swatches; the best one is what the filtered list is sorted by.
 --
--- Matching itself is unchanged from the original design — exact bucket
--- equality against a specific rank, no fuzzy tolerance, both sides classified
--- by the same function. What changed is only what the three slots MEAN: they
--- used to be primary/secondary/tertiary of one item (tertiary went unused),
--- and are now three alternatives for the primary. That is a breadth fix: a
--- single primary pick yields a median of 5 results over a real Hands list, so
--- the player needs several at once, and some colors only ever show up as a
--- primary in particular slots.
+-- EXCLUDED colours drop any piece that matches one of them -- with pieces now
+-- in every colour they plausibly have, "black and white, but nothing that is
+-- also red" is a real question.
 --
--- The accent is deliberately NOT OR'd with the primaries — it narrows all of
--- them at once ("red or blue or green, all with gold trim").
---
--- `skip` is "primary" or "accent": that part of the filter is ignored, so
--- Palette.lua can count what a swatch would yield given the REST of the
--- filter. A primary swatch's count is independent of the other primaries
--- precisely because they OR together.
+-- `skip` is "primary" or "accent": that part of the filter is ignored, so the
+-- strip can count what a swatch would yield given the REST of the filter. A
+-- main swatch's count is independent of the other mains precisely because
+-- they OR together.
+local function BestMainScore(visualID)
+    local best
+    for key in pairs(ns.state.primaryColors) do
+        local r = ns.MatchScore(visualID, key)
+        if r and (not best or r > best) then best = r end
+    end
+    return best
+end
+
 local function MatchesFilter(visualID, skip)
-    local itemColors = visualID and ns.ItemColors[visualID]
-    if not itemColors then return false end
-
-    -- ns.MainAndAccent, not itemColors[1]/[2]. Rank order discounts neutrals by
-    -- a fixed 0.50 when ranking, which is a weighting rather than a rule, and it
-    -- still left the greyscale buckets holding armour with obvious colour in it.
-    -- MainAndAccent applies the colour-first threshold instead. This is NOT the
-    -- any-rank matching that was rejected for the filter: an appearance still
-    -- has exactly ONE main colour and ONE accent, and a pick still matches by
-    -- exact bucket equality against the main. Only WHICH cluster is called the
-    -- main has changed.
-    -- visualID is passed so hand corrections (ns.OverrideFor) apply. Without
-    -- it an override is silently inert here while still showing up in the
-    -- swatch counts, which would make a count describe a different set than
-    -- clicking it returns -- the recurring failure this file warns about.
-    local primary, accentCluster = ns.MainAndAccent(itemColors, visualID)
-
-    if skip ~= "primary" then
-        if not primary then return false end
-        -- primaryColors is a SET keyed by bucket key, not a 1..3 array. The cap
-        -- of three existed because each pick cost a box on screen; with every
-        -- bucket permanently on the strip as a toggle there is nothing to cap,
-        -- and the matching was already an OR -- this is one lookup instead of a
-        -- scan.
-        if next(ns.state.primaryColors) then
-            local primaryKey = ns.FilterClassify(primary[1], primary[2], primary[3], primary[5])
-            if not ns.state.primaryColors[primaryKey] then return false end
-        end
+    if not visualID or not ns.HasMatchData(visualID) then return false end
+    if skip ~= "primary" and next(ns.state.primaryColors) then
+        local best = BestMainScore(visualID)
+        if not best or best < 1 then return false end
     end
-
-    if skip ~= "accent" then
-        local accent = ns.state.accentColor
-        if accent then
-            -- The appearance's SECOND colour, exactly as the old Secondary slot
-            -- behaved -- and still literally rank 2 whenever the main colour is
-            -- rank 1, which is the usual case. A monochrome item has no second
-            -- cluster and so cannot match an accent.
-            local c = accentCluster
-            if not c then return false end
-            if accent.key ~= ns.FilterClassify(c[1], c[2], c[3], c[5]) then
-                return false
-            end
-        end
+    if skip ~= "accent" and ns.state.accentColor then
+        local r = ns.MatchScore(visualID, ns.state.accentColor.key)
+        if not r or r < 1 then return false end
     end
-
+    for key in pairs(ns.state.excludeColors) do
+        if ns.MatchExcluded(visualID, key) then return false end
+    end
     return true
+end
+
+-- What a filtered list is sorted by: the best main score, or with only an
+-- accent picked, the accent's.
+local function SortScore(visualID)
+    -- ns.MatchSortScore: pieces mainly the picked colour first, then pieces
+    -- that only carry some of it (Matching.lua).
+    if next(ns.state.primaryColors) then
+        local best = 0
+        for key in pairs(ns.state.primaryColors) do
+            local r = ns.MatchSortScore(visualID, key)
+            if r > best then best = r end
+        end
+        return best
+    end
+    local accent = ns.state.accentColor
+    return accent and ns.MatchSortScore(visualID, accent.key) or 0
 end
 
 ns.MatchesFilterExcept = MatchesFilter
@@ -354,14 +370,21 @@ local function ApplyColorFilterToTransmog(ic, entries)
 
     if not HasActiveFilter() then return end
 
-    local filtered = {}
-    for _, entry in ipairs(entries) do
+    local filtered, score, order = {}, {}, {}
+    for i, entry in ipairs(entries) do
         if MatchesFilter(entry.visualID) then
             table.insert(filtered, entry)
+            score[entry] = SortScore(entry.visualID)
+            order[entry] = i
         end
     end
+    -- Best match first. Ties keep the game's own order, so equal matches are
+    -- not shuffled between refreshes (table.sort is not stable by itself).
+    table.sort(filtered, function(a, b)
+        if score[a] ~= score[b] then return score[a] > score[b] end
+        return order[a] < order[b]
+    end)
     lastFilteredCount = #filtered
-    if #filtered == #entries then return end
 
     -- Read BEFORE the re-set, which is what moves it. Only worth restoring when
     -- this is the same list the player was already paging through.
@@ -399,6 +422,17 @@ end
 -- Exposed so a slash command that changes what the filter MATCHES can redraw
 -- the list. Safe to call with the Transmogrifier closed -- it no-ops.
 ns.RefreshFilter = RefreshTransmog
+
+-- Development (Capture.lua's sweep): back to page 1, and how many appearances
+-- the last filter pass kept.
+function ns.ResetTransmogPage()
+    local c = GetPagingControls(GetTransmogItemsFrame())
+    if c and c.SetCurrentPage then pcall(c.SetCurrentPage, c, 1) end
+end
+
+function ns.LastFilteredCount()
+    return lastFilteredCount
+end
 
 -- Walks an object and its metatable chain for method names. Frame methods live
 -- on the metatable's __index, not on the object, so pairs(frame) alone finds
@@ -825,6 +859,91 @@ local function TryHookTransmog()
     return true
 end
 
+-- === Collections > Appearances (the journal) ===
+-- Revisits the decision noted above TransmogFrame: the strip and filter now
+-- also go on the journal, for finding gear by colour -- including gear not
+-- collected yet, which the journal lists and the Transmogrifier does not.
+--
+-- From Blizzard_Wardrobe.lua (wow-ui-source 12.1.0): RefreshVisualsList fetches
+-- the category, FilterVisuals copies it into self.filteredVisualsList,
+-- SortVisuals sorts that, and only THEN are the pages counted and drawn from
+-- it. So a post-hook on SortVisuals sees the journal's own final list and can
+-- replace it, and the page count follows. Same filter and sort as the
+-- Transmogrifier, same selection: one strip state, two windows.
+local function GetJournalItemsFrame()
+    return WardrobeCollectionFrame and WardrobeCollectionFrame.ItemsCollectionFrame
+end
+
+local function JournalCapturing()
+    return ns.IsJournalCapturing and ns.IsJournalCapturing()
+end
+
+local function ApplyColorFilterToJournal(items)
+    local list = items.filteredVisualsList
+    -- Weapon enchants (illusions) share the frame and are not appearances.
+    if not list or (items.transmogLocation and items.transmogLocation:IsIllusion()) then return end
+
+    -- Counts come from everything the journal would list, collected or not --
+    -- its own Collected / Not Collected / source filters already applied.
+    local vids = {}
+    for _, info in ipairs(list) do
+        if info.visualID then vids[#vids + 1] = info.visualID end
+    end
+    ns.SetCurrentVisualIDs(vids)
+    if ns.RefreshColorPanels then ns.RefreshColorPanels() end
+
+    if not HasActiveFilter() or JournalCapturing() then return end
+    local filtered, score, order = {}, {}, {}
+    for i, info in ipairs(list) do
+        if MatchesFilter(info.visualID) then
+            filtered[#filtered + 1] = info
+            score[info] = SortScore(info.visualID)
+            order[info] = i
+        end
+    end
+    table.sort(filtered, function(a, b)
+        if score[a] ~= score[b] then return score[a] > score[b] end
+        return order[a] < order[b]
+    end)
+    items.filteredVisualsList = filtered
+end
+
+local function RefreshJournal()
+    local items = GetJournalItemsFrame()
+    if not (items and items:IsVisible() and items.transmogLocation) then return end
+    items:RefreshVisualsList()
+    items:ResetPage()
+end
+
+local journalHooked = false
+local function TryHookJournal()
+    if journalHooked then return end
+    local items = GetJournalItemsFrame()
+    if not (items and items.SortVisuals and items.RefreshVisualsList) then return end
+    hooksecurefunc(items, "SortVisuals", ApplyColorFilterToJournal)
+    journalHooked = true
+
+    if ns.RegisterColorPanel then
+        ns.RegisterColorPanel(items, WardrobeCollectionFrame.SearchBox, RefreshJournal, {
+            posKey = "stripPosJournal",
+            -- Under the window rather than over the grid: the journal's top
+            -- edge is slot buttons and filters, with no spare row to cover.
+            place = function(panel)
+                panel:SetPoint("TOPRIGHT", CollectionsJournal, "BOTTOMRIGHT", 0, -2)
+            end,
+            visible = function() return not JournalCapturing() end,
+            strata = "DIALOG",
+        })
+    end
+    if ns.RegisterJournalColorTags then ns.RegisterJournalColorTags(items) end
+    -- The strip's counts follow whichever list was drawn last; hand them back
+    -- to the Transmogrifier when the journal closes over it.
+    items:HookScript("OnHide", function()
+        if TransmogFrame and TransmogFrame:IsShown() then RefreshTransmog() end
+    end)
+    RefreshJournal()
+end
+
 -- === Colour correction on the appearance right-click menu ===
 --
 -- Blizzard already owns right-click on a tile ("Transmogrify as:" / Set
@@ -951,7 +1070,11 @@ f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == ADDON then
         InitDB()
+    elseif event == "ADDON_LOADED" and name == "Blizzard_Collections" then
+        TryHookJournal()
     elseif event == "PLAYER_LOGIN" then
+        -- Load-on-demand, but another addon may have loaded it already.
+        TryHookJournal()
         StartTransmogPoll()
         -- Registered by TAG, so it does not need the Transmogrifier -- or even
         -- Blizzard_TransmogShared -- to be loaded yet. Menu.ModifyMenu just
@@ -1082,6 +1205,11 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     end
 
     if msg and msg:lower():match("^grain") then
+        -- Retired in 1.3.0: the roller picks from the strip's own colours
+        -- (pools, with their own More / Less), so a grain no longer means
+        -- anything -- and changing it would wipe every slot's pool.
+        print("|cff44ff44TransmogPalette:|r grain is no longer used - the roller picks from the same colours as the strip. Use More / Less in the roller's colour picker for light and dark shades.")
+        do return end
         -- How coarsely the RANDOMISER buckets colours. The filter is unaffected.
         local want = msg:lower():match("^grain%s+(%a+)")
         if not want then
@@ -1222,17 +1350,14 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         for _, vid in ipairs(visuals) do
             if MatchesFilter(vid) then
                 shown = shown + 1
-                local ranks = ns.ItemColors[vid]
-                local main, accent = ns.MainAndAccent(ranks, vid)
-                local mainKey = main and ns.FilterClassify(main[1], main[2], main[3], main[5])
-                local accentKey = accent and ns.FilterClassify(accent[1], accent[2], accent[3], accent[5])
-                out[#out + 1] = ("%3d. visual %-7d main=%-12s accent=%-12s%s"):format(
-                    shown, vid, tostring(mainKey), tostring(accentKey),
-                    ns.OverrideFor(vid) and "  [OVERRIDDEN]" or "")
+                local first, second = ns.TopSwatches(vid)
+                out[#out + 1] = ("%3d. visual %-7d best=%-12s next=%-12s score=%.2f%s"):format(
+                    shown, vid, first and first.key or "none", second and second.key or "none",
+                    SortScore(vid), ns.OverrideFor(vid) and "  [OVERRIDDEN]" or "")
             end
         end
         TransmogPaletteDB.matchedDump = out
-        print(("|cff44ff44TransmogPalette:|r %d appearances match. Grid order, written to SavedVariables — |cffffff00/reload|r to read it."):format(shown))
+        print(("|cff44ff44TransmogPalette:|r %d appearances match, listed in VISUAL order (the grid is sorted by score). Written to SavedVariables — |cffffff00/reload|r to read it."):format(shown))
         for i = 1, math.min(#out, 10) do print("  " .. out[i]) end
         if #out > 10 then print(("  ... %d more in SavedVariables"):format(#out - 10)) end
         return
@@ -1299,14 +1424,9 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
                 if not ranks then
                     line = ("visual %-7d (no colour data -- this override does nothing)"):format(vid)
                 else
-                    local cm, ca = ns.ComputeMainAndAccent(ranks)
-                    local em, ea = ns.MainAndAccent(ranks, vid)
-                    local function key(c)
-                        return c and ns.FilterClassify(c[1], c[2], c[3], c[5]) or "none"
-                    end
-                    line = ("visual %-7d main %s   accent %s"):format(vid,
-                        o.main and ("%s -> |cffffff00%s|r"):format(key(cm), key(em)) or key(em),
-                        o.accent and ("%s -> |cffffff00%s|r"):format(key(ca), key(ea)) or key(ea))
+                    local first, second = ns.TopSwatches(vid)
+                    line = ("visual %-7d now matches best: |cffffff00%s|r%s"):format(vid,
+                        first and first.name or "none", second and (", then " .. second.name) or "")
                 end
                 out[#out + 1] = line
                 print("  " .. line)
@@ -1326,9 +1446,7 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
             else
                 TransmogPaletteDB.colorOverrides = {}
             end
-            ns.InvalidateSwatchPalettes()
-            if ns.InvalidateRandomizerSlots then ns.InvalidateRandomizerSlots() end
-            if ns.RefreshFilter then ns.RefreshFilter() end
+            ns.OverridesChanged()
             print(("|cff44ff44TransmogPalette:|r %s overrides cleared."):format(layer))
             return
         end
@@ -1361,16 +1479,14 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
                 end
                 spec = index
             else
-                -- A bucket key: for a colour the extractor never found at all.
-                -- Stored as the canonical h/s/v for that bucket, which is
-                -- guaranteed to classify back into it, rather than as the key
-                -- itself -- keys are grain-dependent, h/s/v is not.
-                local h, s, v, ac = ns.CanonicalSwatch(value, ns.FilterGrain())
-                if not h then
-                    print(("|cffff4444TransmogPalette:|r '%s' is not a colour bucket at the current grain."):format(value))
+                -- A swatch key: for a colour the extractor never found at all.
+                -- Stored as that swatch's colour rather than the key, so it
+                -- survives the palette changing.
+                spec = ns.OverrideSpecFromKey(value)
+                if not spec then
+                    print(("|cffff4444TransmogPalette:|r '%s' is not a swatch (e.g. red, darkgray, brightgreen)."):format(value))
                     return
                 end
-                spec = { h, s, v, ac }
             end
             overrides[vid] = overrides[vid] or {}
             overrides[vid][side] = spec
@@ -1511,6 +1627,12 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         return
     end
 
+    if msg and msg:lower():match("^capture") then
+        -- Development: screenshot calibration, see Capture.lua.
+        if ns.CaptureCommand then ns.CaptureCommand(msg:match("^%S+%s*(.*)")) end
+        return
+    end
+
     if msg and msg:lower():match("^resetpos") then
         if ns.ResetStripPosition then ns.ResetStripPosition() end
         print("|cff44ff44TransmogPalette:|r colour strip moved back under the search box.")
@@ -1534,9 +1656,13 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         local mains = {}
         for key in pairs(ns.state.primaryColors) do mains[#mains + 1] = key end
         table.sort(mains)
-        print(("  grain: %s. mains (%d): %s"):format(
-            ns.FilterGrain(), #mains, #mains > 0 and table.concat(mains, ", ") or "(none)"))
+        print(("  swatches: %s. mains (%d): %s"):format(
+            ns.MatchDetail(), #mains, #mains > 0 and table.concat(mains, ", ") or "(none)"))
         print(("  accent: %s"):format(ns.state.accentColor and ns.state.accentColor.key or "(empty)"))
+        local ex = {}
+        for key in pairs(ns.state.excludeColors) do ex[#ex + 1] = key end
+        table.sort(ex)
+        print(("  excluded: %s"):format(#ex > 0 and table.concat(ex, ", ") or "(none)"))
         return
     end
 
@@ -1544,9 +1670,9 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     -- watch, weapons, record) still work but are deliberately not advertised.
     local withData, total = ns.GetCoverage()
     print("|cff44ff44Transmog Palette|r")
-    print("  Open the Transmogrifier. Click a colour swatch beside any gear slot to assign a colour, then press |cffffff00Roll|r for a random matching outfit. Nothing is spent until you press Apply.")
-    print("  Right-click a swatch to clear it; right-click Roll to clear every slot.")
-    print("  |cffffff00/tmpalette grain|r - how coarse the roll colours are (fine, medium, coarse, broad)")
+    print("  Filter: in the Transmogrifier or Collections > Appearances, click colours on the strip. Right-click sets an accent; middle-click or Shift-click excludes a colour.")
+    print("  Roll: in the Transmogrifier, click the swatch beside a gear slot to pick its colours (or |cffffff00All Slots|r), then press |cffffff00Roll|r. Nothing is spent until you press Apply.")
+    print("  Right-click a slot swatch to clear it; right-click Roll to clear every slot.")
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
     print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")

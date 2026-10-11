@@ -1,43 +1,57 @@
 # Changelog
 
-## 1.2.2
+## 1.3.0
 
-**Weapons have colours now.** Nearly a thousand appearances had no colour data
-at all — almost every one of them a weapon, plus some cloaks, helms and
-shoulders. They were invisible to every colour filter and never rolled, and
-because a filter can only ever show you what it let *through*, there was no way
-to notice. Coverage goes from 98.3% to **99.75%**.
+**Colours that match what you see.** Every appearance in the Collections
+journal was looked at as the game actually draws it, lit and shaded on a
+character, and its colours judged from that picture rather than from the
+texture files. Shading was what kept fooling the old method: shaded red leather
+came out brown, white plate came out grey, dark purple came out black. Tested
+on items held back from the start, the number of clearly coloured items you
+couldn't find under any of their colours fell from more than half to about 1 in
+20.
 
-The cause: a weapon's texture is baked into its model rather than referenced the
-way armour's is, and the extractor only knew the armour route. Wirt's Last Leg,
-Aurastone Hammer, The Nexus Key and about 965 others go back as far as Classic,
-so this was never about a recent patch. What's left without data is mostly
-things that genuinely have no colour — ammo, and the "hide this slot" entries.
+**Items show up under every colour they have.** A black robe with red trim is
+under black *and* red. Pieces that are mainly the colour you picked come first;
+pieces that only carry some of it come after. Items with no clear colour are
+still under their closest one, at the end of the list.
 
-**Orange and gold are one colour now.** They were the same hue in practice —
-WoW's gold sits right where orange does — so the two swatches returned
-much the same armour, and real gold mostly landed under *orange*, leaving the
-gold swatch holding 2,400 appearances that largely weren't gold. One amber
-bucket of 10,126 replaces them. It's still smaller than brown or red.
+**Exclude colours.** Middle-click or Shift-click a swatch to leave out
+everything that also has that colour. "Black and white, but nothing with red,
+blue or green" is three clicks.
 
-The gold swatch also stops returning olive and chartreuse. Its range reached far
-enough into yellow-green to pull in 807 mossy pieces; those now group with
-green, where they look like they belong.
+**Light and dark.** **More** now splits each colour into a light and a dark
+half: black and white over dark and light grey, light and dark red, orange,
+brown, gold, green and blue, and pink over purple.
 
-**Less armour is filed as black or grey.** Each appearance can now record four
-colours instead of three, and that turns out to matter for pieces that aren't
-grey at all: a colour that didn't fit took its share of the item with it, and
-once enough colour had been dropped the piece fell through into greyscale. Some
-900 appearances move out of black and grey and into a colour they visibly are —
-teal-tusked helms, cyan-spiked shoulders, a lavender headpiece. Greyscale drops
-from 15.5% of the game to 13.9%; only 3.7% of appearances truly have no colour.
+**Colour filters in Collections → Appearances.** The same strip works in the
+journal, including items you haven't collected yet, so you can see what's out
+there in a colour before you go and get it. The journal's own filters
+(collected, sources, class) still apply. Each tile shows its colours there too.
 
-The extra colour costs about 3 MB of memory while the Transmogrifier is open.
+**Roll from a pool of colours.** A slot's colour can now be several colours:
+pick gold and purple, and the slot rolls from all your gold and purple pieces.
+Exclusions work here too. **All Slots** (was **Single Color**) sets one pool on
+every slot at once. The roller's picker has its own **More** / **Less**, and
+closes with the Transmogrifier.
 
-**Your saved colours are cleared once more.** The "orange" bucket no longer
-exists, so a saved pick holding it would quietly match nothing. Hand corrections
-made with the override picker are keyed to the appearance itself and survive, as
-always.
+**Swatches on every tile.** Each appearance shows its one or two main colours
+in its corner, filter or no filter. Turn them off with the **Swatches**
+checkbox or `/tmpalette swatches`.
+
+**The strip can be moved.** Drag it by its background; each window remembers
+its own spot. `/tmpalette resetpos` puts it back.
+
+**Your saved colour picks are cleared once**, on the strip and on the roller's
+slots, because the colours they named don't exist any more. Hand corrections
+made with the override picker still apply.
+
+`/tmpalette grain` is retired: the roller uses the strip's colours now.
+
+Items added in a game patch have no colours until the next update of this
+addon, which follows each patch.
+
+Marked compatible with 12.1.0 and 12.1.5.
 
 ## 1.2.1
 

@@ -1,0 +1,245 @@
+<title>Transmog Colour Boundaries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one long column of strips; each strip is a wrapping ramp of tiles
+   with a movable divider. Single dark look on purpose: the tiles are game
+   renders on black, and judging colour against a white page would skew it. */
+:root {
+  --bg: #121116;
+  --surface: #1b1a21;
+  --raised: #24222c;
+  --line: #34313d;
+  --fg: #ebe6dc;
+  --muted: #9b95a6;
+  --accent: #d9a74a;
+  --ok: #7fbf8a;
+  --warn: #e08a6a;
+  --display: "Marcellus", "Palatino Linotype", Georgia, serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  color-scheme: dark;
+}
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; }
+header { display: grid; gap: 10px; margin-bottom: 28px; }
+h1 { font: 400 2rem/1.15 var(--display); letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 68ch; margin: 0; }
+.lede b { color: var(--fg); font-weight: 500; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 6px; }
+.progress { font: 500 13px var(--mono); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; }
+.progress span { color: var(--accent); }
+label.toggle { display: inline-flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; cursor: pointer; }
+.notice { display: none; border: 1px solid var(--warn); color: var(--warn); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.notice.show { display: block; }
+
+section.strip { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 16px; margin-bottom: 18px; display: grid; gap: 12px; }
+.strip-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+.strip-head h2 { font: 400 1.3rem/1.2 var(--display); margin: 0; display: flex; gap: 10px; align-items: center; }
+.swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid #0006; }
+.arrow { color: var(--muted); font-family: var(--body); font-size: 1rem; }
+.meta { color: var(--muted); font: 12px var(--mono); }
+.state { font: 500 12px var(--mono); padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.state.saved { color: var(--ok); border-color: var(--ok); }
+.state.saving { color: var(--accent); border-color: var(--accent); }
+.state.error { color: var(--warn); border-color: var(--warn); }
+
+.ramp { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.tile { position: relative; width: 84px; display: grid; gap: 4px; }
+.tile button.pick { all: unset; cursor: pointer; display: block; border-radius: 6px; overflow: hidden; outline-offset: 2px; border-bottom: 4px solid var(--side); }
+.tile button.pick:focus-visible { outline: 2px solid var(--accent); }
+.tile button.pick:hover img { filter: brightness(1.15); }
+.tile img { display: block; width: 84px; height: auto; aspect-ratio: 100 / 136; max-width: 100%; }
+.tile .chip { height: 8px; border-radius: 3px; }
+body.no-chips .tile .chip { visibility: hidden; }
+.tile button.flag { all: unset; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; border-radius: 4px; display: grid; place-items: center; font: 600 12px var(--mono); color: var(--muted); background: #000a; cursor: pointer; opacity: 0; }
+.tile:hover button.flag, .tile button.flag:focus-visible, .tile.flagged button.flag { opacity: 1; }
+.tile button.flag:focus-visible { outline: 2px solid var(--accent); }
+.tile.flagged button.flag { color: var(--bg); background: var(--warn); }
+.tile.flagged img { opacity: .35; }
+.tile .side-tag { font: 600 11px/1.6 var(--body); letter-spacing: .04em; text-transform: uppercase; text-align: center; border-radius: 4px; color: var(--bg); background: var(--side); }
+.divider { width: 30px; align-self: stretch; min-height: 150px; border-radius: 6px; background: var(--accent); color: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; }
+.divider span { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+
+.strip-foot { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.strip-foot button.reset { font: 500 13px var(--body); color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 5px 11px; cursor: pointer; }
+.strip-foot button.reset:focus-visible { outline: 2px solid var(--accent); }
+.strip-foot textarea { flex: 1 1 260px; min-width: 0; min-height: 34px; resize: vertical; font: 13px var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; }
+.split-text { font-size: 13px; color: var(--muted); }
+.split-text b { color: var(--fg); font-weight: 500; }
+@media (prefers-reduced-motion: no-preference) { .divider { transition: box-shadow .2s; } }
+@media (max-width: 520px) { .tile, .tile img { width: 70px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Transmog Colour Boundaries</h1>
+    <p class="lede">Each row runs from one colour to its neighbour, using items you captured in the Transmogrifier. The label under every tile says which colour it is filed as right now, and the gold marker shows where the row switches. It starts where crowd-sourced colour naming would switch. <b>Click the first item that looks like the second colour</b>: it and everything after it get the second colour, everything before it keeps the first. The thin bar above each label is the colour the addon measured for that item.</p>
+    <p class="lede">If an item fits neither colour, or the addon measured the wrong part of it, mark it with <b>✕</b> in its corner. If a row has no clean split, tick that box and say why in the note.</p>
+    <div class="bar">
+      <span class="progress" id="progress"><span>0</span> of 0 reviewed</span>
+      <label class="toggle"><input type="checkbox" id="chips" checked> Show measured colour</label>
+    </div>
+    <p class="notice" id="notice">Saving isn't available in this view, so your choices will not be kept. Open the page from your claude.ai artifacts while signed in.</p>
+  </header>
+  <main id="strips"></main>
+</div>
+
+<script>
+const DATA = /*__REVIEW_DATA__*/null;
+const SWATCH = { black:"#17161a", gray:"#7c7a80", white:"#e9e7e2", red:"#b3262b", brown:"#6e4a2c",
+  orange:"#d9772a", gold:"#d4ab3c", green:"#3f8f45", blue:"#3466b8", purple:"#7a4bb0", pink:"#d0679c" };
+const cap = s => s[0].toUpperCase() + s.slice(1);
+
+const state = {};          // id -> {cut, unsure, note, flags:Set, reviewed}
+let db = null;
+const writing = {}, queued = {}, timers = {};
+
+function threshold(strip, cut) {
+  const it = strip.items;
+  if (cut <= 0) return 0;
+  if (cut >= it.length) return 1;
+  return +((it[cut - 1].s + it[cut].s) / 2).toFixed(4);
+}
+
+function render(strip) {
+  const st = state[strip.id];
+  const sec = document.getElementById("s-" + strip.id);
+  const ramp = sec.querySelector(".ramp");
+  ramp.textContent = "";
+  const marker = () => {
+    const m = document.createElement("div");
+    m.className = "divider"; m.setAttribute("role", "separator");
+    m.innerHTML = `<span class="mk-a">← ${cap(strip.a)}</span><span class="mk-b">${cap(strip.b)} →</span>`;
+    return m;
+  };
+  strip.items.forEach((it, i) => {
+    if (i === st.cut) ramp.append(marker());
+    const side = i < st.cut ? strip.a : strip.b;
+    const t = document.createElement("div");
+    t.className = "tile" + (st.flags.has(it.vid) ? " flagged" : "");
+    t.style.setProperty("--side", SWATCH[side]);
+    const pick = document.createElement("button");
+    pick.className = "pick";
+    pick.title = `Appearance ${it.vid} · now filed as ${it.now} · click to make this the first ${strip.b}`;
+    pick.setAttribute("aria-label", `Item ${i + 1}, appearance ${it.vid}, currently ${side}. Make this the first ${strip.b}.`);
+    const img = new Image(); img.src = it.img; img.alt = ""; img.loading = "lazy";
+    pick.append(img);
+    pick.onclick = () => setCut(strip, i);
+    const flag = document.createElement("button");
+    flag.className = "flag"; flag.textContent = "✕";
+    flag.title = "Fits neither colour, or the wrong part was measured";
+    flag.setAttribute("aria-pressed", st.flags.has(it.vid));
+    flag.onclick = e => { e.stopPropagation(); st.flags.has(it.vid) ? st.flags.delete(it.vid) : st.flags.add(it.vid); touch(strip); };
+    const chip = document.createElement("div");
+    chip.className = "chip"; chip.style.background = it.chip;
+    const tag = document.createElement("div");
+    tag.className = "side-tag"; tag.textContent = cap(side);
+    t.append(pick, flag, chip, tag);
+    ramp.append(t);
+  });
+  if (st.cut === strip.items.length) ramp.append(marker());
+  const left = st.cut, right = strip.items.length - st.cut;
+  sec.querySelector(".split-text").innerHTML =
+    `<b>${left}</b> ${strip.a} · <b>${right}</b> ${strip.b}` + (st.cut !== strip.defaultCut ? ` · moved ${st.cut > strip.defaultCut ? "+" : ""}${st.cut - strip.defaultCut} from the survey line` : " · survey line");
+  sec.querySelector("input.unsure").checked = st.unsure;
+  progress();
+}
+
+function setCut(strip, i) { state[strip.id].cut = i; touch(strip); }
+
+function touch(strip) {
+  state[strip.id].reviewed = true;
+  render(strip);
+  if (!db) return;
+  clearTimeout(timers[strip.id]);
+  timers[strip.id] = setTimeout(() => save(strip), 500);
+  mark(strip, "saving", "Saving…");
+}
+
+function mark(strip, cls, text) {
+  const el = document.querySelector(`#s-${strip.id} .state`);
+  el.className = "state " + cls; el.textContent = text;
+}
+
+async function save(strip) {
+  if (writing[strip.id]) { queued[strip.id] = true; return; }
+  writing[strip.id] = true;
+  const st = state[strip.id];
+  try {
+    await db.doc("review/" + strip.id).set({
+      a: strip.a, b: strip.b, cut: st.cut, defaultCut: strip.defaultCut,
+      threshold: threshold(strip, st.cut), unsure: st.unsure, note: st.note,
+      flags: [...st.flags], shown: strip.items.map(it => it.vid), reviewed: true,
+    });
+    mark(strip, "saved", "Saved");
+  } catch (e) {
+    mark(strip, "error", e && e.code === "invalid_argument" ? "Can't save here" : "Not saved, try again");
+  }
+  writing[strip.id] = false;
+  if (queued[strip.id]) { queued[strip.id] = false; save(strip); }
+}
+
+function progress() {
+  // Guarded: render() runs while strips are still being built.
+  const n = DATA.strips.filter(s => state[s.id] && state[s.id].reviewed).length;
+  document.getElementById("progress").innerHTML = `<span>${n}</span> of ${DATA.strips.length} reviewed`;
+}
+
+function build() {
+  const root = document.getElementById("strips");
+  for (const strip of DATA.strips) {
+    state[strip.id] = { cut: strip.defaultCut, unsure: false, note: "", flags: new Set(), reviewed: false };
+  }
+  for (const strip of DATA.strips) {
+    const sec = document.createElement("section");
+    sec.className = "strip"; sec.id = "s-" + strip.id;
+    sec.innerHTML = `
+      <div class="strip-head">
+        <h2><span class="swatch" style="background:${SWATCH[strip.a]}"></span>${cap(strip.a)}
+            <span class="arrow">→</span>
+            <span class="swatch" style="background:${SWATCH[strip.b]}"></span>${cap(strip.b)}</h2>
+        <span class="meta">${strip.items.length} of ${strip.pool} captured items</span>
+        <span class="state">Not reviewed</span>
+      </div>
+      <div class="ramp"></div>
+      <div class="strip-foot">
+        <span class="split-text"></span>
+        <button class="reset" type="button">Back to survey line</button>
+        <label class="toggle"><input type="checkbox" class="unsure" id="u-${strip.id}"> No clean split</label>
+        <textarea id="n-${strip.id}" placeholder="Note (optional): what makes these hard to split?" aria-label="Note for ${strip.a} to ${strip.b}"></textarea>
+      </div>`;
+    root.append(sec);
+    sec.querySelector(".reset").onclick = () => setCut(strip, strip.defaultCut);
+    sec.querySelector("input.unsure").onchange = e => { state[strip.id].unsure = e.target.checked; touch(strip); };
+    const ta = sec.querySelector("textarea");
+    ta.oninput = () => { state[strip.id].note = ta.value; touch(strip); };
+    render(strip);
+  }
+}
+
+document.getElementById("chips").onchange = e => document.body.classList.toggle("no-chips", !e.target.checked);
+
+build();
+
+(async () => {
+  db = window.claude ? await window.claude.use("db") : null;
+  if (!db) { document.getElementById("notice").classList.add("show"); return; }
+  try {
+    const snap = await db.collection("review").get();
+    for (const d of snap.docs) {
+      const strip = DATA.strips.find(s => s.id === d.id);
+      const v = d.data();
+      if (!strip || !v) continue;
+      Object.assign(state[strip.id], {
+        cut: Math.min(Math.max(0, v.cut | 0), strip.items.length),
+        unsure: !!v.unsure, note: v.note || "", flags: new Set(v.flags || []), reviewed: !!v.reviewed,
+      });
+      document.getElementById("n-" + strip.id).value = state[strip.id].note;
+      render(strip);
+      mark(strip, "saved", "Saved");
+    }
+  } catch (e) { /* first visit: nothing stored yet */ }
+})();
+</script>

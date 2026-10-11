@@ -291,6 +291,8 @@ end
 -- bucket has moved, so every cached palette and per-slot candidate list is
 -- stale. Same sequence as /tmpalette colorfirst.
 function ns.OverridesChanged()
+    -- Match scores read overrides too (Matching.lua), and are cached.
+    if ns.InvalidateMatchCache then ns.InvalidateMatchCache() end
     ns.InvalidateSwatchPalettes()
     if ns.InvalidateRandomizerSlots then ns.InvalidateRandomizerSlots() end
     if ns.RefreshRandomizerPanel then ns.RefreshRandomizerPanel() end
@@ -582,7 +584,7 @@ ns.DEFAULT_GRAIN = "broad"
 --   5: teal regrouped from blue to green
 --   6: teal reverted to blue (5 was rejected in game the same day). Bumped
 --      FORWARD rather than back to 4, so a client that ran 5 still clears
-ns.ROLL_SCHEME_VERSION = 6
+ns.ROLL_SCHEME_VERSION = 8  -- 7: rolls by the filter's general colours; 8: a slot holds a SET of colours (a pool)
 
 -- Same contract as ClassifyColor -- the SAME function classifies both the
 -- item's colour and the picked swatch, so a match is exact bucket equality.
@@ -816,6 +818,13 @@ function ns.SetCurrentVisuals(entries)
             table.insert(currentVisuals, e.visualID)
         end
     end
+    ns.swatchPalettes = {}
+end
+
+-- The Collections journal's list (Core.lua): every entry it shows counts --
+-- it lists uncollected appearances on purpose, under its own filters.
+function ns.SetCurrentVisualIDs(visualIDs)
+    currentVisuals = visualIDs
     ns.swatchPalettes = {}
 end
 

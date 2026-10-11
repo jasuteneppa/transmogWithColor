@@ -51,12 +51,19 @@ local REFRESH = 0.15
 local MAX_DEPTH = 5
 
 local itemsFrame
+-- Collections > Appearances (Core.lua's journal hook). Its tiles are a fixed
+-- set of models, items.Models, each carrying the appearance it shows in
+-- .visualInfo (Blizzard_Wardrobe.lua UpdateItems) -- no walk needed.
+local journalFrame
 local ticker
 local overlays = {}      -- tile -> overlay frame, so tiles are decorated once
 local lastTileCount = 0
+-- Held off for a moment by the capture tool (Capture.lua) so the chips are not
+-- in the screenshot: they would be read as the item's own pixels.
+local suspended = false
 
 local function Enabled()
-    return TransmogPaletteDB and TransmogPaletteDB.showColorTags
+    return TransmogPaletteDB and TransmogPaletteDB.showColorTags and not suspended
 end
 
 -- Pooled tiles: resolve from the frame every time, never cache the result.
@@ -83,6 +90,23 @@ local function CollectTiles(root, out, depth)
             CollectTiles(kid, out, depth + 1)
         end
     end
+end
+
+-- The journal's tiles on screen, or none: while it lists weapon enchants
+-- (illusions, not appearances), and during a journal capture, whose
+-- screenshots must not contain the chips.
+local function JournalTiles()
+    local out = {}
+    if not (journalFrame and journalFrame:IsVisible()) then return out end
+    local loc = journalFrame.transmogLocation
+    if loc and loc:IsIllusion() then return out end
+    if ns.IsJournalCapturing and ns.IsJournalCapturing() then return out end
+    for _, model in ipairs(journalFrame.Models or {}) do
+        if model:IsShown() and type(model.visualInfo) == "table" then
+            out[#out + 1] = model
+        end
+    end
+    return out
 end
 
 local function Tiles()
@@ -148,63 +172,61 @@ local function OverlayOf(tile)
     return created
 end
 
--- Always BROAD grain, never the filter's current grain. At a fine grain the
--- swatch for green_dark and the swatch for green_mid are near-identical at this
--- size, so the overlay would show two squares you cannot tell apart -- and the
--- question it exists to answer ("is this the right colour family") is a broad
--- one. The filter's own grain is a separate setting and must not change what
--- these squares mean from one session to the next.
-local BROAD = "broad"
-
--- Returns mainKey, accentKey, status. status is nil when everything resolved.
+-- Returns the best and second-best matching swatches (Matching.lua) and a
+-- status. The SAME scores the filter sorts by, so a tile's swatches say what
+-- clicking those strip swatches would find it under. status is nil when
+-- everything resolved.
 local function DescribeVisual(visualID)
     if not visualID then return nil, nil, nil end
-    if not ns.HasColorData or not ns.HasColorData(visualID) then
+    if not ns.HasMatchData or not ns.HasMatchData(visualID) then
         return nil, nil, "no data"
     end
-    local ranks = ns.ItemColors and ns.ItemColors[visualID]
-    if not ranks then return nil, nil, "no data" end
-
-    local main, accent = ns.MainAndAccent(ranks, visualID)
-    if not main then return nil, nil, "no main" end
-
-    local mainKey = ns.ClassifyColorGrained(main[1], main[2], main[3], BROAD, main[5])
-    local accentKey
-    if accent then
-        accentKey = ns.ClassifyColorGrained(accent[1], accent[2], accent[3], BROAD, accent[5])
-    end
-    -- An override is a hand correction, so the squares are not showing what the
-    -- classifier computed. Saying so prevents reading a corrected item as
-    -- evidence that the classifier got it right.
+    local first, second = ns.TopSwatches(visualID)
+    if not first then return nil, nil, "no data" end
+    -- An override is a hand correction, so the squares are not showing what
+    -- was computed. Saying so prevents reading a corrected item as evidence
+    -- that the matching got it right.
     local status
     if ns.OverrideFor and ns.OverrideFor(visualID) then
         status = "fixed"
     end
-    return mainKey, accentKey, status
+    return first, second, status
 end
 
--- The colour a bucket is drawn as. Deliberately the SAME canonical colour the
--- picker uses for that bucket, so a square here and a swatch in the strip are
--- the same colour when they mean the same thing.
-local function BucketRGB(key)
-    if not key or not ns.CanonicalSwatch then return nil end
-    local h, s, v = ns.CanonicalSwatch(key, BROAD)
-    if not h then return nil end
-    return ns.HSVToRGB(h, s, v)
+local function SwatchRGB(sw)
+    if not sw then return nil end
+    return sw.r, sw.g, sw.bl
+end
+
+-- Both windows' tiles that are on screen now.
+local function AllTiles()
+    local out = (itemsFrame and itemsFrame:IsVisible()) and Tiles() or {}
+    for _, model in ipairs(JournalTiles()) do out[#out + 1] = model end
+    return out
+end
+
+local function TileVisualID(tile)
+    local vid = VisualIDOf(tile)
+    if vid then return vid end
+    return type(tile.visualInfo) == "table" and tile.visualInfo.visualID or nil
 end
 
 local function Refresh()
-    if not Enabled() or not itemsFrame then return end
-    for _, tile in ipairs(Tiles()) do
+    if not Enabled() then return end
+    -- A journal tile emptied by paging, or chips left from before a capture
+    -- started: hide every overlay no current tile claims.
+    local live = {}
+    for _, tile in ipairs(AllTiles()) do
         local overlay = OverlayOf(tile)
         if overlay then
-            local visualID = VisualIDOf(tile)
+            live[overlay] = true
+            local visualID = TileVisualID(tile)
             if not visualID then
                 overlay:Hide()
             else
-                local mainKey, accentKey, status = DescribeVisual(visualID)
-                SetChip(overlay.main, BucketRGB(mainKey))
-                SetChip(overlay.accent, BucketRGB(accentKey))
+                local first, second, status = DescribeVisual(visualID)
+                SetChip(overlay.main, SwatchRGB(first))
+                SetChip(overlay.accent, SwatchRGB(second))
                 -- The label sits in the chip row only when it REPLACES the
                 -- chips. FIXED annotates chips that are there, so it belongs
                 -- under them -- sharing one anchor put it on top of them.
@@ -223,6 +245,9 @@ local function Refresh()
             end
         end
     end
+    for _, overlay in pairs(overlays) do
+        if not live[overlay] then overlay:Hide() end
+    end
 end
 
 local function Stop()
@@ -238,15 +263,49 @@ end
 local function Start()
     if ticker then return end
     ticker = C_Timer.NewTicker(REFRESH, function()
-        if not Enabled() or not itemsFrame or not itemsFrame:IsShown() then
-            return
-        end
+        if not Enabled() then return end
+        local transmogUp = itemsFrame and itemsFrame:IsShown()
+        local journalUp = journalFrame and journalFrame:IsVisible()
+        if not (transmogUp or journalUp) then return end
         Refresh()
     end)
 end
 
+function ns.SuspendColorTags(on)
+    suspended = on and true or false
+    if suspended then
+        for _, overlay in pairs(overlays) do pcall(overlay.Hide, overlay) end
+    elseif Enabled() then
+        Refresh()
+    end
+end
+
+-- Every appearance tile currently on screen, as { visualID, left, bottom,
+-- width, height } in UNSCALED screen units -- the frame's rect times its
+-- effective scale -- so the capture script can map them onto a screenshot of
+-- any resolution by proportion alone.
+function ns.VisibleTileRects()
+    local out = {}
+    for _, tile in ipairs(Tiles()) do
+        local vid = VisualIDOf(tile)
+        if vid and tile:IsVisible() then
+            local left, bottom, width, height = tile:GetRect()
+            if left then
+                local s = tile:GetEffectiveScale()
+                out[#out + 1] = { vid, left * s, bottom * s, width * s, height * s }
+            end
+        end
+    end
+    return out
+end
+
 function ns.RegisterColorTags(ic)
     itemsFrame = ic
+    if Enabled() then Start() end
+end
+
+function ns.RegisterJournalColorTags(items)
+    journalFrame = items
     if Enabled() then Start() end
 end
 
@@ -303,11 +362,11 @@ function ns.ProbeColorTags()
         if i > 5 then break end
         local vid = VisualIDOf(tile)
         local okT, t = pcall(tile.GetObjectType, tile)
-        local mainKey, accentKey, status = DescribeVisual(vid)
-        print(("    tile[%d] %s visualID=%s data=%s -> main=%s accent=%s%s"):format(
+        local first, second, status = DescribeVisual(vid)
+        print(("    tile[%d] %s visualID=%s data=%s -> best=%s next=%s%s"):format(
             i, okT and t or "?", tostring(vid),
             (vid and ns.HasColorData and ns.HasColorData(vid)) and "yes" or "NO",
-            tostring(mainKey), tostring(accentKey),
+            first and first.key or "nil", second and second.key or "nil",
             status and (" [" .. status .. "]") or ""))
     end
 end
