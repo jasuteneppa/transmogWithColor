@@ -1205,6 +1205,11 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     end
 
     if msg and msg:lower():match("^grain") then
+        -- Retired in 1.3.0: the roller picks from the strip's own colours
+        -- (pools, with their own More / Less), so a grain no longer means
+        -- anything -- and changing it would wipe every slot's pool.
+        print("|cff44ff44TransmogPalette:|r grain is no longer used - the roller picks from the same colours as the strip. Use More / Less in the roller's colour picker for light and dark shades.")
+        do return end
         -- How coarsely the RANDOMISER buckets colours. The filter is unaffected.
         local want = msg:lower():match("^grain%s+(%a+)")
         if not want then
@@ -1665,9 +1670,9 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
     -- watch, weapons, record) still work but are deliberately not advertised.
     local withData, total = ns.GetCoverage()
     print("|cff44ff44Transmog Palette|r")
-    print("  Open the Transmogrifier. Click a colour swatch beside any gear slot to assign a colour, then press |cffffff00Roll|r for a random matching outfit. Nothing is spent until you press Apply.")
-    print("  Right-click a swatch to clear it; right-click Roll to clear every slot.")
-    print("  |cffffff00/tmpalette grain|r - how coarse the roll colours are (fine, medium, coarse, broad)")
+    print("  Filter: in the Transmogrifier or Collections > Appearances, click colours on the strip. Right-click sets an accent; middle-click or Shift-click excludes a colour.")
+    print("  Roll: in the Transmogrifier, click the swatch beside a gear slot to pick its colours (or |cffffff00All Slots|r), then press |cffffff00Roll|r. Nothing is spent until you press Apply.")
+    print("  Right-click a slot swatch to clear it; right-click Roll to clear every slot.")
     print("  |cffffff00/tmpalette roll|r - roll without clicking the button")
     print("  |cffffff00/tmpalette slots|r - what each slot can draw from")
     print("  |cffffff00/tmpalette swatches|r - show or hide the colour swatches on each appearance")

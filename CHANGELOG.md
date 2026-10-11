@@ -2,41 +2,54 @@
 
 ## 1.3.0
 
-**Colour filters match what you actually see.** Until now every appearance got
-exactly one colour name, and the filter worked by name. A lot of WoW armour
-doesn't have one name: a red-and-gold gauntlet is both, shaded red leather got
-called brown, and metal took whatever its highlights happened to be. No amount
-of moving the boundaries between names could fix that.
+**Colours that match what you see.** Every appearance in the Collections
+journal was looked at as the game actually draws it, lit and shaded on a
+character, and its colours judged from that picture rather than from the
+texture files. Shading was what kept fooling the old method: shaded red leather
+came out brown, white plate came out grey, dark purple came out black. Tested
+on items held back from the start, the number of clearly coloured items you
+couldn't find under any of their colours fell from more than half to about 1 in
+20.
 
-So names are gone. A swatch is now a colour, and an appearance matches it by how
-much of its surface is *close* to that colour — as it looks on screen in the
-Transmogrifier, not as it sits in the texture file, which runs noticeably darker
-and shifted in hue. Coloured and grey are kept strictly apart, so a faintly
-tinted plate doesn't turn up under blue, and a blue robe with grey trim doesn't
-turn up under grey.
+**Items show up under every colour they have.** A black robe with red trim is
+under black *and* red. Pieces that are mainly the colour you picked come first;
+pieces that only carry some of it come after. Items with no clear colour are
+still under their closest one, at the end of the list.
 
-**Best matches first.** Results are sorted: pieces that are mostly the colour
-come first, pieces with a trim of it come last, instead of the collection's own
-order.
+**Exclude colours.** Middle-click or Shift-click a swatch to leave out
+everything that also has that colour. "Black and white, but nothing with red,
+blue or green" is three clicks.
 
-**A new palette.** The strip still shows eleven broad colours — black, gray,
-white, red, orange, brown, gold, green, blue, purple, pink — and **More** now
-opens twenty, measured from the game's own armour rather than picked by hand:
-maroon, bronze, jade, teal, cyan, slate, violet and the rest. A broad swatch
-matches any of its shades.
+**Light and dark.** **More** now splits each colour into a light and a dark
+half: black and white over dark and light grey, light and dark red, orange,
+brown, gold, green and blue, and pink over purple.
 
-**Swatches on every tile.** Each appearance shows the two swatches it matches
-best in its corner, filter or no filter, so you can see why something turned up.
-Turn them off with the **Swatches** checkbox or `/tmpalette swatches`.
+**Colour filters in Collections → Appearances.** The same strip works in the
+journal, including items you haven't collected yet, so you can see what's out
+there in a colour before you go and get it. The journal's own filters
+(collected, sources, class) still apply. Each tile shows its colours there too.
 
-**The strip can be moved.** Drag it by its background; it remembers where you
-put it. `/tmpalette resetpos` puts it back under the search box.
+**Roll from a pool of colours.** A slot's colour can now be several colours:
+pick gold and purple, and the slot rolls from all your gold and purple pieces.
+Exclusions work here too. **All Slots** (was **Single Color**) sets one pool on
+every slot at once. The roller's picker has its own **More** / **Less**, and
+closes with the Transmogrifier.
 
-**Your saved colour picks are cleared once.** The old colour names don't exist
-any more, so a saved pick would quietly match nothing. Hand corrections made
-with the override picker still apply, and new ones pick from the new swatches.
+**Swatches on every tile.** Each appearance shows its one or two main colours
+in its corner, filter or no filter. Turn them off with the **Swatches**
+checkbox or `/tmpalette swatches`.
 
-The roller is unchanged in this release and rolls exactly as it did in 1.2.1.
+**The strip can be moved.** Drag it by its background; each window remembers
+its own spot. `/tmpalette resetpos` puts it back.
+
+**Your saved colour picks are cleared once**, on the strip and on the roller's
+slots, because the colours they named don't exist any more. Hand corrections
+made with the override picker still apply.
+
+`/tmpalette grain` is retired: the roller uses the strip's colours now.
+
+Items added in a game patch have no colours until the next update of this
+addon, which follows each patch.
 
 Marked compatible with 12.1.0 and 12.1.5.
 
