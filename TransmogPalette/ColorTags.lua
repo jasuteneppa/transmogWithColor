@@ -51,6 +51,10 @@ local REFRESH = 0.15
 local MAX_DEPTH = 5
 
 local itemsFrame
+-- Collections > Appearances (Core.lua's journal hook). Its tiles are a fixed
+-- set of models, items.Models, each carrying the appearance it shows in
+-- .visualInfo (Blizzard_Wardrobe.lua UpdateItems) -- no walk needed.
+local journalFrame
 local ticker
 local overlays = {}      -- tile -> overlay frame, so tiles are decorated once
 local lastTileCount = 0
@@ -86,6 +90,23 @@ local function CollectTiles(root, out, depth)
             CollectTiles(kid, out, depth + 1)
         end
     end
+end
+
+-- The journal's tiles on screen, or none: while it lists weapon enchants
+-- (illusions, not appearances), and during a journal capture, whose
+-- screenshots must not contain the chips.
+local function JournalTiles()
+    local out = {}
+    if not (journalFrame and journalFrame:IsVisible()) then return out end
+    local loc = journalFrame.transmogLocation
+    if loc and loc:IsIllusion() then return out end
+    if ns.IsJournalCapturing and ns.IsJournalCapturing() then return out end
+    for _, model in ipairs(journalFrame.Models or {}) do
+        if model:IsShown() and type(model.visualInfo) == "table" then
+            out[#out + 1] = model
+        end
+    end
+    return out
 end
 
 local function Tiles()
@@ -157,7 +178,7 @@ end
 -- everything resolved.
 local function DescribeVisual(visualID)
     if not visualID then return nil, nil, nil end
-    if not ns.HasColorData or not ns.HasColorData(visualID) then
+    if not ns.HasMatchData or not ns.HasMatchData(visualID) then
         return nil, nil, "no data"
     end
     local first, second = ns.TopSwatches(visualID)
@@ -177,12 +198,29 @@ local function SwatchRGB(sw)
     return sw.r, sw.g, sw.bl
 end
 
+-- Both windows' tiles that are on screen now.
+local function AllTiles()
+    local out = (itemsFrame and itemsFrame:IsVisible()) and Tiles() or {}
+    for _, model in ipairs(JournalTiles()) do out[#out + 1] = model end
+    return out
+end
+
+local function TileVisualID(tile)
+    local vid = VisualIDOf(tile)
+    if vid then return vid end
+    return type(tile.visualInfo) == "table" and tile.visualInfo.visualID or nil
+end
+
 local function Refresh()
-    if not Enabled() or not itemsFrame then return end
-    for _, tile in ipairs(Tiles()) do
+    if not Enabled() then return end
+    -- A journal tile emptied by paging, or chips left from before a capture
+    -- started: hide every overlay no current tile claims.
+    local live = {}
+    for _, tile in ipairs(AllTiles()) do
         local overlay = OverlayOf(tile)
         if overlay then
-            local visualID = VisualIDOf(tile)
+            live[overlay] = true
+            local visualID = TileVisualID(tile)
             if not visualID then
                 overlay:Hide()
             else
@@ -207,6 +245,9 @@ local function Refresh()
             end
         end
     end
+    for _, overlay in pairs(overlays) do
+        if not live[overlay] then overlay:Hide() end
+    end
 end
 
 local function Stop()
@@ -222,9 +263,10 @@ end
 local function Start()
     if ticker then return end
     ticker = C_Timer.NewTicker(REFRESH, function()
-        if not Enabled() or not itemsFrame or not itemsFrame:IsShown() then
-            return
-        end
+        if not Enabled() then return end
+        local transmogUp = itemsFrame and itemsFrame:IsShown()
+        local journalUp = journalFrame and journalFrame:IsVisible()
+        if not (transmogUp or journalUp) then return end
         Refresh()
     end)
 end
@@ -259,6 +301,11 @@ end
 
 function ns.RegisterColorTags(ic)
     itemsFrame = ic
+    if Enabled() then Start() end
+end
+
+function ns.RegisterJournalColorTags(items)
+    journalFrame = items
     if Enabled() then Start() end
 end
 

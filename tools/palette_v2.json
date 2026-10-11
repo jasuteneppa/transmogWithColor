@@ -39,7 +39,7 @@
     36.18,
     24.69
    ],
-   "min_score": 0.1175
+   "min_score": 0.1207
   },
   {
    "name": "orange1",
@@ -59,17 +59,17 @@
     2.95,
     12.82
    ],
-   "min_score": 0.2055
+   "min_score": 0.2228
   },
   {
    "name": "gold1",
    "group": "gold",
    "lab": [
-    59.69,
-    5.16,
-    48.57
+    77.01,
+    6.56,
+    48.51
    ],
-   "min_score": 0.1789
+   "min_score": 0.2511
   },
   {
    "name": "green1",
@@ -95,11 +95,21 @@
    "name": "purple1",
    "group": "purple",
    "lab": [
-    55.3,
-    23.46,
-    -24.71
+    37.56,
+    23.33,
+    -19.36
    ],
-   "min_score": 0.1115
+   "min_score": 0.205
+  },
+  {
+   "name": "purple2",
+   "group": "purple",
+   "lab": [
+    50.46,
+    51.22,
+    -73.2
+   ],
+   "min_score": 0.095
   },
   {
    "name": "pink1",

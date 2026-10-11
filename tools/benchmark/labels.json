@@ -540,9 +540,9 @@
 "slot": 4,
 "yes": [],
 "unsure": [
-"white",
 "gray",
-"purple"
+"purple",
+"white"
 ],
 "holdout": false
 },
@@ -1137,9 +1137,9 @@
 "slot": 1,
 "yes": [],
 "unsure": [
-"white",
 "black",
-"gray"
+"gray",
+"white"
 ],
 "holdout": false
 },
@@ -1189,9 +1189,9 @@
 "yes": [],
 "unsure": [
 "purple",
-"black",
 "gray",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -1287,11 +1287,10 @@
 "120794": {
 "slot": 4,
 "yes": [
-"gray"
-],
-"unsure": [
+"gray",
 "white"
 ],
+"unsure": [],
 "holdout": false
 },
 "81692": {
@@ -1402,7 +1401,8 @@
 "gray"
 ],
 "unsure": [
-"purple"
+"purple",
+"white"
 ],
 "holdout": false
 },
@@ -1627,10 +1627,10 @@
 "125518": {
 "slot": 4,
 "yes": [
-"gray"
+"gray",
+"white"
 ],
 "unsure": [
-"white",
 "blue"
 ],
 "holdout": false
@@ -1690,9 +1690,9 @@
 "slot": 8,
 "yes": [],
 "unsure": [
-"white",
 "purple",
-"green"
+"green",
+"white"
 ],
 "holdout": false
 },
@@ -1764,7 +1764,8 @@
 "brown"
 ],
 "unsure": [
-"gray"
+"gray",
+"white"
 ],
 "holdout": false
 },
@@ -1785,8 +1786,7 @@
 "gray"
 ],
 "unsure": [
-"purple",
-"black"
+"purple"
 ],
 "holdout": false
 },
@@ -1853,9 +1853,10 @@
 },
 "121780": {
 "slot": 11,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "green",
 "gold"
 ],
@@ -1895,7 +1896,8 @@
 "yes": [],
 "unsure": [
 "gold",
-"orange"
+"orange",
+"black"
 ],
 "holdout": false
 },
@@ -2211,7 +2213,8 @@
 "gray"
 ],
 "unsure": [
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -2389,8 +2392,8 @@
 "gray"
 ],
 "unsure": [
-"white",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -2488,8 +2491,8 @@
 "yes": [],
 "unsure": [
 "gold",
-"white",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -2804,7 +2807,8 @@
 "red"
 ],
 "unsure": [
-"gold"
+"gold",
+"black"
 ],
 "holdout": false
 },
@@ -3056,7 +3060,8 @@
 "unsure": [
 "green",
 "blue",
-"gray"
+"gray",
+"black"
 ],
 "holdout": false
 },
@@ -3525,9 +3530,10 @@
 },
 "39704": {
 "slot": 11,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "brown"
 ],
 "holdout": false
@@ -3698,9 +3704,9 @@
 "slot": 11,
 "yes": [],
 "unsure": [
-"white",
 "orange",
-"red"
+"red",
+"white"
 ],
 "holdout": false
 },
@@ -3788,9 +3794,9 @@
 "slot": 3,
 "yes": [],
 "unsure": [
-"white",
 "brown",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -3891,11 +3897,10 @@
 "120792": {
 "slot": 1,
 "yes": [
-"gray"
-],
-"unsure": [
+"gray",
 "white"
 ],
+"unsure": [],
 "holdout": false
 },
 "80602": {
@@ -3952,8 +3957,8 @@
 "yes": [],
 "unsure": [
 "gold",
-"white",
-"pink"
+"pink",
+"white"
 ],
 "holdout": false
 },
@@ -4141,11 +4146,12 @@
 },
 "120110": {
 "slot": 5,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
 "blue",
-"purple",
-"white"
+"purple"
 ],
 "holdout": false
 },
@@ -4300,11 +4306,11 @@
 "120452": {
 "slot": 1,
 "yes": [
-"gray"
+"gray",
+"white"
 ],
 "unsure": [
-"purple",
-"white"
+"purple"
 ],
 "holdout": false
 },
@@ -4634,7 +4640,8 @@
 "82837": {
 "slot": 4,
 "yes": [
-"gray"
+"gray",
+"white"
 ],
 "unsure": [
 "blue"
@@ -4911,9 +4918,10 @@
 },
 "123090": {
 "slot": 8,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "brown"
 ],
 "holdout": false
@@ -5096,9 +5104,10 @@
 },
 "127853": {
 "slot": 7,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "gold"
 ],
 "holdout": false
@@ -5166,9 +5175,10 @@
 },
 "125042": {
 "slot": 3,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "blue",
 "gold"
 ],
@@ -5284,10 +5294,10 @@
 "83350": {
 "slot": 5,
 "yes": [
-"gray"
+"gray",
+"black"
 ],
 "unsure": [
-"black",
 "white"
 ],
 "holdout": false
@@ -5326,7 +5336,6 @@
 "slot": 9,
 "yes": [],
 "unsure": [
-"black",
 "gold",
 "brown"
 ],
@@ -5363,7 +5372,6 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
 "red",
 "brown"
 ],
@@ -5456,8 +5464,7 @@
 "slot": 7,
 "yes": [],
 "unsure": [
-"purple",
-"black"
+"purple"
 ],
 "holdout": false
 },
@@ -5514,19 +5521,21 @@
 },
 "119583": {
 "slot": 1,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
 "gray",
-"white",
 "blue"
 ],
 "holdout": false
 },
 "121716": {
 "slot": 3,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "brown",
 "gold"
 ],
@@ -5745,7 +5754,8 @@
 ],
 "unsure": [
 "blue",
-"purple"
+"purple",
+"white"
 ],
 "holdout": false
 },
@@ -5781,10 +5791,10 @@
 "116249": {
 "slot": 5,
 "yes": [
-"red"
+"red",
+"black"
 ],
 "unsure": [
-"black",
 "gray"
 ],
 "holdout": false
@@ -5834,8 +5844,7 @@
 "yes": [],
 "unsure": [
 "green",
-"brown",
-"black"
+"brown"
 ],
 "holdout": false
 },
@@ -5927,7 +5936,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"white"
+"white",
+"black"
 ],
 "holdout": false
 },
@@ -6360,8 +6370,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -6532,10 +6542,10 @@
 "slot": 6,
 "yes": [],
 "unsure": [
-"black",
 "gray",
 "purple",
-"blue"
+"blue",
+"black"
 ],
 "holdout": false
 },
@@ -6866,8 +6876,8 @@
 "unsure": [
 "gray",
 "brown",
-"black",
-"white"
+"white",
+"black"
 ],
 "holdout": false
 },
@@ -6980,8 +6990,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"white",
-"brown"
+"brown",
+"white"
 ],
 "holdout": false
 },
@@ -7101,16 +7111,17 @@
 "yes": [],
 "unsure": [
 "brown",
-"black",
-"gold"
+"gold",
+"black"
 ],
 "holdout": false
 },
 "38279": {
 "slot": 8,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "blue",
 "orange"
 ],
@@ -7276,8 +7287,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"brown"
+"brown",
+"black"
 ],
 "holdout": false
 },
@@ -7443,7 +7454,8 @@
 "yes": [],
 "unsure": [
 "green",
-"gray"
+"gray",
+"white"
 ],
 "holdout": false
 },
@@ -7479,11 +7491,11 @@
 "82841": {
 "slot": 8,
 "yes": [
-"blue"
+"blue",
+"white"
 ],
 "unsure": [
-"gray",
-"white"
+"gray"
 ],
 "holdout": false
 },
@@ -7603,8 +7615,7 @@
 "yes": [],
 "unsure": [
 "blue",
-"gray",
-"black"
+"gray"
 ],
 "holdout": false
 },
@@ -7613,8 +7624,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"white",
-"green"
+"green",
+"white"
 ],
 "holdout": false
 },
@@ -7690,8 +7701,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -8022,10 +8033,11 @@
 },
 "42442": {
 "slot": 5,
-"yes": [],
-"unsure": [
-"blue",
+"yes": [
 "black"
+],
+"unsure": [
+"blue"
 ],
 "holdout": false
 },
@@ -8045,8 +8057,8 @@
 "gold"
 ],
 "unsure": [
-"white",
-"black"
+"black",
+"white"
 ],
 "holdout": false
 },
@@ -8093,9 +8105,10 @@
 },
 "82986": {
 "slot": 3,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "blue",
 "gold"
 ],
@@ -8338,7 +8351,8 @@
 "unsure": [
 "gray",
 "gold",
-"green"
+"green",
+"white"
 ],
 "holdout": false
 },
@@ -8559,8 +8573,8 @@
 "slot": 4,
 "yes": [],
 "unsure": [
-"black",
-"gray"
+"gray",
+"black"
 ],
 "holdout": false
 },
@@ -8570,8 +8584,7 @@
 "gold"
 ],
 "unsure": [
-"white",
-"black"
+"white"
 ],
 "holdout": false
 },
@@ -8815,8 +8828,8 @@
 "yes": [],
 "unsure": [
 "blue",
-"black",
-"gray"
+"gray",
+"black"
 ],
 "holdout": false
 },
@@ -8865,8 +8878,7 @@
 "yes": [],
 "unsure": [
 "brown",
-"red",
-"black"
+"red"
 ],
 "holdout": false
 },
@@ -9105,10 +9117,10 @@
 "slot": 1,
 "yes": [],
 "unsure": [
-"black",
 "gray",
 "blue",
-"green"
+"green",
+"black"
 ],
 "holdout": false
 },
@@ -9144,7 +9156,9 @@
 },
 "125513": {
 "slot": 7,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
 "gray",
 "purple"
@@ -9354,9 +9368,9 @@
 "slot": 1,
 "yes": [],
 "unsure": [
-"white",
 "gold",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -9850,8 +9864,8 @@
 "yes": [],
 "unsure": [
 "gold",
-"white",
-"red"
+"red",
+"white"
 ],
 "holdout": false
 },
@@ -10906,9 +10920,10 @@
 },
 "119020": {
 "slot": 1,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "gray",
 "gold"
 ],
@@ -10982,10 +10997,11 @@
 },
 "74947": {
 "slot": 11,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
 "gray",
-"white",
 "blue"
 ],
 "holdout": false
@@ -11286,7 +11302,8 @@
 "slot": 7,
 "yes": [],
 "unsure": [
-"gray"
+"gray",
+"black"
 ],
 "holdout": false
 },
@@ -11810,9 +11827,10 @@
 },
 "76637": {
 "slot": 11,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "gray"
 ],
 "holdout": false
@@ -11960,7 +11978,6 @@
 "slot": 1,
 "yes": [],
 "unsure": [
-"black",
 "green",
 "pink"
 ],
@@ -11971,8 +11988,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -12265,9 +12282,10 @@
 },
 "76290": {
 "slot": 6,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "blue",
 "gold"
 ],
@@ -12325,9 +12343,9 @@
 "slot": 4,
 "yes": [],
 "unsure": [
-"black",
 "gray",
-"green"
+"green",
+"black"
 ],
 "holdout": false
 },
@@ -12375,10 +12393,11 @@
 },
 "34007": {
 "slot": 8,
-"yes": [],
-"unsure": [
-"purple",
+"yes": [
 "black"
+],
+"unsure": [
+"purple"
 ],
 "holdout": false
 },
@@ -12528,10 +12547,11 @@
 },
 "11538": {
 "slot": 8,
-"yes": [],
-"unsure": [
-"gray",
+"yes": [
 "black"
+],
+"unsure": [
+"gray"
 ],
 "holdout": false
 },
@@ -12558,8 +12578,8 @@
 "slot": 6,
 "yes": [],
 "unsure": [
-"black",
-"brown"
+"brown",
+"black"
 ],
 "holdout": false
 },
@@ -12680,8 +12700,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"green"
+"green",
+"black"
 ],
 "holdout": false
 },
@@ -13015,16 +13035,19 @@
 "yes": [
 "brown"
 ],
-"unsure": [],
+"unsure": [
+"black"
+],
 "holdout": false
 },
 "79519": {
 "slot": 1,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
 "gray",
-"green",
-"white"
+"green"
 ],
 "holdout": false
 },
@@ -13040,9 +13063,10 @@
 },
 "30911": {
 "slot": 6,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "green",
 "purple"
 ],
@@ -13050,11 +13074,12 @@
 },
 "11492": {
 "slot": 3,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
 "brown",
-"green",
-"black"
+"green"
 ],
 "holdout": false
 },
@@ -13303,8 +13328,7 @@
 "yes": [],
 "unsure": [
 "gray",
-"brown",
-"black"
+"brown"
 ],
 "holdout": false
 },
@@ -13616,9 +13640,10 @@
 },
 "32297": {
 "slot": 9,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "green"
 ],
 "holdout": false
@@ -13685,11 +13710,10 @@
 "38853": {
 "slot": 9,
 "yes": [
-"gray"
-],
-"unsure": [
+"gray",
 "black"
 ],
+"unsure": [],
 "holdout": false
 },
 "39511": {
@@ -14116,10 +14140,10 @@
 "82836": {
 "slot": 3,
 "yes": [
-"blue"
+"blue",
+"white"
 ],
 "unsure": [
-"white",
 "gray"
 ],
 "holdout": false
@@ -14235,9 +14259,7 @@
 "yes": [
 "red"
 ],
-"unsure": [
-"black"
-],
+"unsure": [],
 "holdout": false
 },
 "17448": {
@@ -14581,9 +14603,9 @@
 "slot": 5,
 "yes": [],
 "unsure": [
-"black",
 "gray",
-"green"
+"green",
+"black"
 ],
 "holdout": false
 },
@@ -14621,11 +14643,10 @@
 "slot": 3,
 "yes": [
 "gray",
-"blue"
-],
-"unsure": [
+"blue",
 "white"
 ],
+"unsure": [],
 "holdout": false
 },
 "34610": {
@@ -14705,8 +14726,7 @@
 "yes": [],
 "unsure": [
 "red",
-"orange",
-"black"
+"orange"
 ],
 "holdout": false
 },
@@ -14900,15 +14920,17 @@
 "slot": 1,
 "yes": [],
 "unsure": [
-"white",
 "brown",
-"orange"
+"orange",
+"white"
 ],
 "holdout": false
 },
 "84830": {
 "slot": 9,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
 "gray",
 "blue",
@@ -15090,7 +15112,8 @@
 ],
 "unsure": [
 "gray",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -15108,8 +15131,7 @@
 "slot": 7,
 "yes": [],
 "unsure": [
-"gold",
-"black"
+"gold"
 ],
 "holdout": false
 },
@@ -15279,7 +15301,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -15356,7 +15379,6 @@
 "yes": [],
 "unsure": [
 "orange",
-"black",
 "brown"
 ],
 "holdout": false
@@ -15430,11 +15452,10 @@
 "80646": {
 "slot": 9,
 "yes": [
-"gray"
-],
-"unsure": [
+"gray",
 "black"
 ],
+"unsure": [],
 "holdout": false
 },
 "76688": {
@@ -15516,9 +15537,10 @@
 },
 "39288": {
 "slot": 11,
-"yes": [],
+"yes": [
+"white"
+],
 "unsure": [
-"white",
 "gray"
 ],
 "holdout": false
@@ -15586,7 +15608,6 @@
 "slot": 6,
 "yes": [],
 "unsure": [
-"white",
 "brown"
 ],
 "holdout": false
@@ -15596,8 +15617,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"red"
+"red",
+"black"
 ],
 "holdout": false
 },
@@ -15634,8 +15655,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"black",
-"purple"
+"purple",
+"black"
 ],
 "holdout": false
 },
@@ -15695,7 +15716,8 @@
 "yes": [],
 "unsure": [
 "gray",
-"blue"
+"blue",
+"white"
 ],
 "holdout": false
 },
@@ -15964,9 +15986,10 @@
 },
 "11615": {
 "slot": 5,
-"yes": [],
+"yes": [
+"black"
+],
 "unsure": [
-"black",
 "gray"
 ],
 "holdout": false
@@ -16062,8 +16085,7 @@
 "slot": 9,
 "yes": [],
 "unsure": [
-"gray",
-"black"
+"gray"
 ],
 "holdout": false
 },
@@ -16117,6 +16139,5929 @@
 "brown"
 ],
 "holdout": false
+},
+"26871": {
+"slot": 5,
+"yes": [
+"brown"
+],
+"unsure": [
+"blue",
+"green",
+"gray",
+"white"
+],
+"holdout": true
+},
+"8378": {
+"slot": 5,
+"yes": [
+"red"
+],
+"unsure": [
+"orange",
+"gold",
+"purple",
+"white"
+],
+"holdout": false
+},
+"21188": {
+"slot": 9,
+"yes": [
+"red"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": false
+},
+"9808": {
+"slot": 3,
+"yes": [],
+"unsure": [
+"gold",
+"brown",
+"gray"
+],
+"holdout": true
+},
+"82824": {
+"slot": 3,
+"yes": [
+"gold"
+],
+"unsure": [
+"blue"
+],
+"holdout": true
+},
+"84529": {
+"slot": 3,
+"yes": [
+"gold"
+],
+"unsure": [
+"brown"
+],
+"holdout": true
+},
+"7698": {
+"slot": 5,
+"yes": [],
+"unsure": [
+"gold",
+"brown",
+"gray",
+"orange"
+],
+"holdout": true
+},
+"38488": {
+"slot": 15,
+"yes": [
+"brown"
+],
+"unsure": [
+"black"
+],
+"holdout": false
+},
+"1399": {
+"slot": 9,
+"yes": [
+"brown"
+],
+"unsure": [
+"gold",
+"orange"
+],
+"holdout": true
+},
+"5313": {
+"slot": 9,
+"yes": [
+"orange"
+],
+"unsure": [
+"green",
+"gray",
+"gold"
+],
+"holdout": false
+},
+"76300": {
+"slot": 5,
+"yes": [
+"gold"
+],
+"unsure": [
+"purple",
+"brown",
+"orange"
+],
+"holdout": true
+},
+"36003": {
+"slot": 16,
+"yes": [
+"gold"
+],
+"unsure": [
+"red",
+"purple",
+"orange",
+"brown"
+],
+"holdout": true
+},
+"90811": {
+"slot": 15,
+"yes": [
+"blue"
+],
+"unsure": [
+"orange",
+"gold"
+],
+"holdout": true
+},
+"27268": {
+"slot": 3,
+"yes": [
+"gray"
+],
+"unsure": [
+"white",
+"purple"
+],
+"holdout": false
+},
+"80599": {
+"slot": 15,
+"yes": [
+"gold"
+],
+"unsure": [
+"blue",
+"purple",
+"red",
+"black"
+],
+"holdout": false
+},
+"36027": {
+"slot": 5,
+"yes": [
+"red",
+"gold"
+],
+"unsure": [
+"orange"
+],
+"holdout": false
+},
+"9487": {
+"slot": 10,
+"yes": [
+"brown"
+],
+"unsure": [
+"gray",
+"orange"
+],
+"holdout": false
+},
+"84870": {
+"slot": 15,
+"yes": [
+"blue"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": true
+},
+"26860": {
+"slot": 3,
+"yes": [
+"gray"
+],
+"unsure": [
+"brown",
+"white"
+],
+"holdout": false
+},
+"76293": {
+"slot": 8,
+"yes": [],
+"unsure": [
+"purple",
+"blue",
+"gold",
+"black",
+"white"
+],
+"holdout": true
+},
+"70223": {
+"slot": 8,
+"yes": [
+"gray"
+],
+"unsure": [
+"blue",
+"black"
+],
+"holdout": true
+},
+"17483": {
+"slot": 3,
+"yes": [
+"gold"
+],
+"unsure": [
+"blue"
+],
+"holdout": false
+},
+"34001": {
+"slot": 7,
+"yes": [
+"black"
+],
+"unsure": [
+"gold",
+"gray"
+],
+"holdout": true
+},
+"77233": {
+"slot": 5,
+"yes": [
+"brown"
+],
+"unsure": [
+"gold",
+"black"
+],
+"holdout": false
+},
+"33438": {
+"slot": 6,
+"yes": [
+"brown"
+],
+"unsure": [
+"gold",
+"orange"
+],
+"holdout": true
+},
+"70219": {
+"slot": 3,
+"yes": [
+"gray"
+],
+"unsure": [
+"blue",
+"white"
+],
+"holdout": false
+},
+"35099": {
+"slot": 7,
+"yes": [
+"brown"
+],
+"unsure": [
+"red",
+"gray",
+"purple"
+],
+"holdout": false
+},
+"18565": {
+"slot": 7,
+"yes": [
+"gray"
+],
+"unsure": [
+"blue",
+"brown",
+"black",
+"red"
+],
+"holdout": false
+},
+"18986": {
+"slot": 8,
+"yes": [],
+"unsure": [
+"purple",
+"brown",
+"gray"
+],
+"holdout": true
+},
+"41299": {
+"slot": 16,
+"yes": [],
+"unsure": [
+"gold",
+"green",
+"red"
+],
+"holdout": false
+},
+"27266": {
+"slot": 10,
+"yes": [
+"brown"
+],
+"unsure": [
+"gray",
+"blue"
+],
+"holdout": true
+},
+"17912": {
+"slot": 16,
+"yes": [],
+"unsure": [
+"blue",
+"gold",
+"brown"
+],
+"holdout": true
+},
+"19026": {
+"slot": 16,
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"black",
+"white"
+],
+"holdout": true
+},
+"82801": {
+"slot": 5,
+"yes": [
+"brown"
+],
+"unsure": [
+"purple",
+"gray",
+"white"
+],
+"holdout": true
+},
+"116807": {
+"slot": 3,
+"yes": [],
+"unsure": [
+"gold",
+"green",
+"gray",
+"purple"
+],
+"holdout": true
+},
+"115576": {
+"slot": 3,
+"yes": [
+"purple"
+],
+"unsure": [
+"gold",
+"white"
+],
+"holdout": true
+},
+"39286": {
+"slot": 16,
+"yes": [],
+"unsure": [
+"orange",
+"brown",
+"gold",
+"red"
+],
+"holdout": true
+},
+"76899": {
+"slot": 5,
+"yes": [
+"white",
+"blue"
+],
+"unsure": [
+"gray"
+],
+"holdout": true
+},
+"3414": {
+"slot": 15,
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"red"
+],
+"holdout": false
+},
+"33454": {
+"slot": 6,
+"yes": [
+"brown"
+],
+"unsure": [
+"red",
+"gold"
+],
+"holdout": false
+},
+"17743": {
+"slot": 10,
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"green",
+"brown"
+],
+"holdout": true
+},
+"12500": {
+"slot": 10,
+"yes": [],
+"unsure": [
+"red",
+"orange",
+"black",
+"brown"
+],
+"holdout": false
+},
+"34268": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"green",
+"gray",
+"black",
+"brown"
+],
+"holdout": true
+},
+"84623": {
+"slot": 3,
+"yes": [
+"gold"
+],
+"unsure": [
+"orange",
+"brown"
+],
+"holdout": false
+},
+"104855": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"orange",
+"gray"
+],
+"holdout": false
+},
+"92744": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"purple",
+"brown",
+"gold"
+],
+"holdout": false
+},
+"95150": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"white",
+"green",
+"red",
+"brown",
+"gray"
+],
+"holdout": true
+},
+"42417": {
+"slot": 5,
+"yes": [
+"gold"
+],
+"unsure": [
+"gray",
+"purple"
+],
+"holdout": true
+},
+"90550": {
+"slot": 3,
+"yes": [
+"red"
+],
+"unsure": [
+"gray",
+"white"
+],
+"holdout": true
+},
+"34267": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"green",
+"gray",
+"gold",
+"black"
+],
+"holdout": false
+},
+"90520": {
+"slot": 15,
+"yes": [
+"brown",
+"blue"
+],
+"unsure": [
+"gold"
+],
+"holdout": false
+},
+"18827": {
+"slot": 16,
+"yes": [
+"gold"
+],
+"unsure": [
+"purple",
+"blue",
+"gray"
+],
+"holdout": false
+},
+"40829": {
+"slot": 8,
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"black"
+],
+"holdout": true
+},
+"77240": {
+"slot": 5,
+"yes": [
+"brown"
+],
+"unsure": [
+"gold",
+"black"
+],
+"holdout": false
+},
+"115578": {
+"slot": 3,
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"green",
+"gray"
+],
+"holdout": false
+},
+"84521": {
+"slot": 3,
+"yes": [],
+"unsure": [
+"gold",
+"brown",
+"orange"
+],
+"holdout": false
+},
+"20973": {
+"slot": 7,
+"yes": [
+"brown"
+],
+"unsure": [
+"green",
+"black",
+"gray"
+],
+"holdout": true
+},
+"28286": {
+"slot": 16,
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"blue",
+"white"
+],
+"holdout": false
+},
+"77239": {
+"slot": 3,
+"yes": [],
+"unsure": [
+"gold",
+"orange",
+"red",
+"brown",
+"black"
+],
+"holdout": false
+},
+"32686": {
+"slot": 10,
+"yes": [
+"gray"
+],
+"unsure": [
+"blue",
+"green"
+],
+"holdout": false
+},
+"104625": {
+"slot": 15,
+"yes": [
+"brown"
+],
+"unsure": [
+"black",
+"blue",
+"gold"
+],
+"holdout": true
+},
+"2176": {
+"slot": 7,
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"blue"
+],
+"holdout": true
+},
+"104833": {
+"slot": 15,
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"red",
+"gold"
+],
+"holdout": true
+},
+"17738": {
+"slot": 3,
+"yes": [],
+"unsure": [
+"blue",
+"red",
+"gray"
+],
+"holdout": false
+},
+"116048": {
+"slot": 15,
+"yes": [
+"blue",
+"white"
+],
+"unsure": [
+"gray",
+"purple"
+],
+"holdout": true
+},
+"83622": {
+"slot": 3,
+"yes": [
+"brown"
+],
+"unsure": [
+"gold",
+"orange"
+],
+"holdout": true
+},
+"70616": {
+"slot": 8,
+"yes": [
+"black"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false
+},
+"82515": {
+"slot": 5,
+"yes": [
+"brown"
+],
+"unsure": [
+"purple",
+"gray",
+"white"
+],
+"holdout": true
+},
+"38057": {
+"slot": 9,
+"yes": [],
+"unsure": [
+"gray",
+"gold",
+"blue",
+"black"
+],
+"holdout": false
+},
+"18567": {
+"slot": 10,
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"black",
+"orange",
+"brown"
+],
+"holdout": true
+},
+"77238": {
+"slot": 15,
+"yes": [],
+"unsure": [
+"black",
+"brown",
+"gold"
+],
+"holdout": true
+},
+"80169": {
+"slot": 5,
+"yes": [
+"black"
+],
+"unsure": [
+"gold",
+"brown",
+"gray"
+],
+"holdout": false
+},
+"32098": {
+"slot": 9,
+"yes": [
+"purple"
+],
+"unsure": [
+"gold"
+],
+"holdout": true
+},
+"37081": {
+"slot": "WAISTSLOT",
+"yes": [
+"brown"
+],
+"unsure": [
+"black",
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"6477": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"pink"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"1997": {
+"slot": "WRISTSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"red",
+"white",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"21405": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"black",
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"5316": {
+"slot": "FEETSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"44178": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gray",
+"red",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"36427": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"green",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"7183": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"104441": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"pink",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"19207": {
+"slot": "BACKSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"14560": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"24095": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"pink",
+"purple",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"38654": {
+"slot": "LEGSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"7194": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"16117": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"39989": {
+"slot": "BACKSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"1952": {
+"slot": "HANDSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"green",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"3439": {
+"slot": "HANDSSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"22612": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"76650": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"blue",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"32088": {
+"slot": "BACKSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"black",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"10710": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"black",
+"gray",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"121199": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"39855": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"gold",
+"green",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"5512": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"8465": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"10134": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"11385": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"red",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"7874": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"13409": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"76465": {
+"slot": "BACKSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"91734": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"white",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"22171": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"brown",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"37667": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"3455": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"black",
+"orange",
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"24301": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"39479": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"white",
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"5829": {
+"slot": "BACKSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"5511": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"93819": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black",
+"white",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"38848": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3330": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"gold",
+"gray",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3263": {
+"slot": "FEETSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"4324": {
+"slot": "WRISTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gold",
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"44680": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"97074": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"27101": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"red",
+"brown",
+"purple",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"15357": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"34812": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"green",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"120851": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"black",
+"blue",
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"41483": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"pink",
+"purple",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"4664": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"11507": {
+"slot": "TABARDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"black",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"8201": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"brown",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"36805": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"red",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"3727": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"5765": {
+"slot": "CHESTSLOT",
+"yes": [
+"black",
+"pink"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"3440": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"96189": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"2947": {
+"slot": "WAISTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"17112": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"1928": {
+"slot": "CHESTSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"8045": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"orange",
+"white",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"5817": {
+"slot": "LEGSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"gold",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"27451": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"green",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"3258": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"red",
+"orange",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"8144": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"red",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"29173": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gray",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"14592": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"black",
+"gray",
+"pink",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"5408": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"4391": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"9368": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"23626": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"2837": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"3237": {
+"slot": "WAISTSLOT",
+"yes": [
+"red"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"1744": {
+"slot": "HANDSSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"22851": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"18597": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"7362": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"97794": {
+"slot": "FEETSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"purple",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"12395": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"gold",
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"14896": {
+"slot": "TABARDSLOT",
+"yes": [
+"blue",
+"gold"
+],
+"unsure": [
+"black",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"2229": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"1552": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"pink",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"43200": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"26292": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"pink",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"24404": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"22040": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"orange",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"6959": {
+"slot": "CHESTSLOT",
+"yes": [
+"red"
+],
+"unsure": [
+"orange",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"11360": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"pink",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"44629": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"black",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"8060": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"black",
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"13748": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"40718": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"19057": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"black",
+"gold",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"10938": {
+"slot": "SHIRTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"blue",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"78136": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"gray",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"1349": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"black",
+"red",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"22076": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"pink",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"30423": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"29174": {
+"slot": "WRISTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"5592": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"12461": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"4058": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"7872": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"25119": {
+"slot": "BACKSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"6407": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"red"
+],
+"unsure": [
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"96141": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"19576": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gold",
+"brown",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"2572": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"96153": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"2721": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"gray",
+"blue",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"8176": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"red",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"3053": {
+"slot": "SHIRTSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"7137": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"40884": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black",
+"red",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"34968": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"19083": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"42584": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"red",
+"black",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3269": {
+"slot": "WRISTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"3851": {
+"slot": "CHESTSLOT",
+"yes": [
+"purple"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"83591": {
+"slot": "SHIRTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"40611": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"14689": {
+"slot": "TABARDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"black",
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"3054": {
+"slot": "SHIRTSLOT",
+"yes": [
+"pink"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"13645": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"green",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"8303": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gold",
+"blue",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"8283": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"pink",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"41102": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"5645": {
+"slot": "FEETSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"28693": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"black",
+"purple",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"2679": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"2569": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"57166": {
+"slot": "BACKSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"98957": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"122741": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"pink",
+"green"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"7720": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"76182": {
+"slot": "BACKSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"5799": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"13083": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"128222": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"green",
+"blue",
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"3262": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"red",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"1814": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"brown",
+"gray",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"39667": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"23698": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"green",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"26517": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"9758": {
+"slot": "BACKSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"3922": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"brown",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"80518": {
+"slot": "WAISTSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"1018": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"7014": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"24920": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"44429": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"blue",
+"gold",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"81946": {
+"slot": "CHESTSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"brown",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"80969": {
+"slot": "HANDSSLOT",
+"yes": [
+"blue"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"118362": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"brown",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"75747": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"green",
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"2953": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"34056": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"orange",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"70297": {
+"slot": "CHESTSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"gray",
+"black",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3195": {
+"slot": "HANDSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"38467": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"17532": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"13183": {
+"slot": "BACKSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"4035": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"pink",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"22771": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"brown",
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"38034": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"red",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"3816": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"14721": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"13935": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"2174": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"700": {
+"slot": "FEETSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"2755": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"39643": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"5745": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"red",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3220": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"3051": {
+"slot": "SHIRTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"97134": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"black",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"804": {
+"slot": "LEGSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"brown",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"7727": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"7169": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"purple",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"2677": {
+"slot": "HANDSSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"7790": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"6160": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"white",
+"red",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"37381": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"4170": {
+"slot": "BACKSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"purple",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"30742": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"pink",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"85188": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"2324": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"10943": {
+"slot": "SHIRTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"9767": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"96162": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"8310": {
+"slot": "HANDSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"14436": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [],
+"holdout": false,
+"source": "journal"
+},
+"1964": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"4547": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"white",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"4548": {
+"slot": "BACKSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"blue",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"190": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"38149": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"white",
+"red",
+"gray",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"1003": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"purple",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"85241": {
+"slot": "WRISTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"orange",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"8624": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"orange",
+"red",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"6745": {
+"slot": "FEETSLOT",
+"yes": [
+"brown"
+],
+"unsure": [
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"96946": {
+"slot": "LEGSSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"10018": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"blue",
+"white",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"2915": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"gold",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"44679": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"green",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"22792": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"2260": {
+"slot": "SHIRTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"1465": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"6656": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"18527": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"5467": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"44626": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"7181": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"5772": {
+"slot": "CHESTSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"39654": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"114909": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"white",
+"purple",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"84609": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"green",
+"white",
+"brown",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"22488": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"10319": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"6475": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"red",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"36261": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"green",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"13647": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"red",
+"white",
+"gray",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"2604": {
+"slot": "BACKSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"36749": {
+"slot": "WRISTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"493": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"pink"
+],
+"unsure": [
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"15886": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"brown",
+"gray",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"6939": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"33982": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"red",
+"gold",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"1502": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"white",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"132781": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"7369": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"90530": {
+"slot": "TABARDSLOT",
+"yes": [
+"blue"
+],
+"unsure": [
+"brown",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"33988": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"brown",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"16430": {
+"slot": "FEETSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"682": {
+"slot": "LEGSSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"12930": {
+"slot": "LEGSSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"brown",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"11709": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gold",
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"40035": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"14261": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"238": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"11236": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"blue",
+"gray",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"91255": {
+"slot": "HANDSSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gray",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"90733": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"white",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"16418": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"pink",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"36246": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"9220": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"22596": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gold",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"22566": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"white",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"27464": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"85231": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"white",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"129831": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"2538": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"12851": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"29143": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"blue",
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"10910": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"122868": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"39661": {
+"slot": "BACKSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"pink",
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"2140": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"83529": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"21292": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"75578": {
+"slot": "WAISTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"22490": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"red",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"40548": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"gold",
+"brown",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"1090": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"81463": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"pink",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"19718": {
+"slot": "HANDSSLOT",
+"yes": [
+"brown"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"9173": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"purple",
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"83626": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"36232": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"7993": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gray",
+"purple",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"4214": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"purple",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"22613": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"38315": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"green",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"27553": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"orange",
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"56350": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"red",
+"white",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"23787": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"blue",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"43902": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"gray",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"131501": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"24073": {
+"slot": "BACKSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"40409": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"125538": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"orange",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"6367": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"pink",
+"white",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"27255": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gold",
+"brown",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"29196": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"purple",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"83322": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"orange",
+"pink",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"10440": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"orange",
+"red",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"9671": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"green",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"39225": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"gold",
+"pink",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"97223": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gray",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"120044": {
+"slot": "CHESTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"red",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"1099": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gray",
+"brown",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"36694": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"43120": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"black",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"15744": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"5886": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"white",
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"22263": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white",
+"purple",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"77192": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"brown",
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"4625": {
+"slot": "BACKSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"18104": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"red",
+"green",
+"blue",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"40568": {
+"slot": "WRISTSLOT",
+"yes": [
+"blue"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"84042": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"white",
+"green",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"10334": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"purple",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"16400": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"4241": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"123075": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"7417": {
+"slot": "LEGSSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"gold",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"1175": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"brown",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"7017": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"red",
+"purple",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"25453": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"21479": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"green",
+"brown",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"15613": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"white",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"3008": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"57205": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"gold",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"5109": {
+"slot": "CHESTSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"white",
+"orange",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"26937": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"1877": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"brown",
+"gold",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"40938": {
+"slot": "WAISTSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"gray",
+"purple",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"9124": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"green",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"16603": {
+"slot": "CHESTSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"7024": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gold",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"39072": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"25516": {
+"slot": "CHESTSLOT",
+"yes": [
+"red"
+],
+"unsure": [
+"black",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"92029": {
+"slot": "CHESTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"76761": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"129961": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"blue",
+"brown",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"18081": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"brown",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"1240": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"37114": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"brown",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"76023": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"34111": {
+"slot": "BACKSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"brown",
+"gold",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"133862": {
+"slot": "CHESTSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"84284": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"green",
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"55911": {
+"slot": "CHESTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"6472": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"green",
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"5417": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"orange"
+],
+"unsure": [
+"red",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"26749": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"gray",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"43970": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"pink",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"41493": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"white",
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"18574": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"white",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"3864": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"pink",
+"orange",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"78336": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"white",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"33040": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"black",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"77217": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"red",
+"white",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"123065": {
+"slot": "FEETSLOT",
+"yes": [
+"red"
+],
+"unsure": [
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"81022": {
+"slot": "LEGSSLOT",
+"yes": [
+"blue"
+],
+"unsure": [
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"13558": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"red",
+"pink",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"76173": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"41706": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"green",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"6719": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gold",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"21733": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"91134": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"blue",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"42886": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"green",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"31705": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gold"
+],
+"unsure": [
+"black",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"57210": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"green",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"39030": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"8990": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"purple",
+"pink",
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"27086": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"blue",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"10613": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"green",
+"pink",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"5891": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"7172": {
+"slot": "FEETSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"22722": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"white",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"125674": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"10270": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"brown",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"82707": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"white",
+"purple",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"55572": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"red",
+"blue",
+"gold",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"13704": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"orange",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"22471": {
+"slot": "LEGSSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"gray",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"22281": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"green",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"6388": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"8146": {
+"slot": "WAISTSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"black"
+],
+"holdout": false,
+"source": "journal"
+},
+"884": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"green",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"23195": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"gray",
+"green",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"2806": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"79396": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"119439": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"21754": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"gray",
+"gold",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"25270": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"brown",
+"white",
+"orange"
+],
+"holdout": false,
+"source": "journal"
+},
+"1051": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"34987": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"orange",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"14009": {
+"slot": "LEGSSLOT",
+"yes": [
+"brown"
+],
+"unsure": [
+"pink",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"16728": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"brown",
+"gold",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"29343": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gold",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"90981": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"blue",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"25672": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"121838": {
+"slot": "WAISTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"purple",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"76769": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"17746": {
+"slot": "BACKSLOT",
+"yes": [
+"blue"
+],
+"unsure": [
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"78397": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"pink",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"12826": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"76014": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"1448": {
+"slot": "CHESTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"117635": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"pink",
+"white",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"21293": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"green",
+"blue",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"5671": {
+"slot": "CHESTSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"brown",
+"green",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"13664": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"red",
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"20512": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"purple",
+"green",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"25645": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"gray",
+"blue",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"9763": {
+"slot": "HANDSSLOT",
+"yes": [
+"black"
+],
+"unsure": [
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"80075": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"91150": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"red",
+"white",
+"brown",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"23070": {
+"slot": "LEGSSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"104983": {
+"slot": "TABARDSLOT",
+"yes": [],
+"unsure": [
+"black",
+"gold",
+"green",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"10423": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"blue",
+"black",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"75745": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"green",
+"blue",
+"brown",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"26866": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"white",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"7366": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"white",
+"gold",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"11272": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"white",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"120061": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"5716": {
+"slot": "BACKSLOT",
+"yes": [],
+"unsure": [
+"green",
+"blue",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"36913": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"pink",
+"green"
+],
+"holdout": false,
+"source": "journal"
+},
+"44533": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"17652": {
+"slot": "FEETSLOT",
+"yes": [],
+"unsure": [
+"black",
+"blue",
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"20932": {
+"slot": "LEGSSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"69613": {
+"slot": "BACKSLOT",
+"yes": [
+"brown"
+],
+"unsure": [
+"red",
+"blue",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"81561": {
+"slot": "BACKSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"96639": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"green",
+"pink",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"15571": {
+"slot": "WRISTSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"red",
+"orange",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"121797": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"purple",
+"gray",
+"blue"
+],
+"holdout": false,
+"source": "journal"
+},
+"13075": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"purple",
+"gold",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"17161": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"blue",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"11138": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"brown",
+"white",
+"red"
+],
+"holdout": false,
+"source": "journal"
+},
+"20585": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"gray",
+"white",
+"blue",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"7659": {
+"slot": "SECONDARYHANDSLOT",
+"yes": [
+"purple"
+],
+"unsure": [
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"4975": {
+"slot": "WRISTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"279": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"white",
+"pink",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"21893": {
+"slot": "MAINHANDSLOT",
+"yes": [],
+"unsure": [
+"brown",
+"gray",
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"81542": {
+"slot": "HANDSSLOT",
+"yes": [],
+"unsure": [
+"green",
+"purple",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"570": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white"
+],
+"holdout": false,
+"source": "journal"
+},
+"91464": {
+"slot": "TABARDSLOT",
+"yes": [],
+"unsure": [
+"red",
+"pink",
+"gray",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"76502": {
+"slot": "SHOULDERSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"blue",
+"pink"
+],
+"holdout": false,
+"source": "journal"
+},
+"18798": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"blue",
+"orange",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"614": {
+"slot": "CHESTSLOT",
+"yes": [
+"green"
+],
+"unsure": [
+"pink",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"41787": {
+"slot": "MAINHANDSLOT",
+"yes": [
+"gray"
+],
+"unsure": [
+"white",
+"brown"
+],
+"holdout": false,
+"source": "journal"
+},
+"18234": {
+"slot": "SHOULDERSLOT",
+"yes": [],
+"unsure": [
+"pink",
+"white",
+"purple",
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"37775": {
+"slot": "CHESTSLOT",
+"yes": [
+"white"
+],
+"unsure": [
+"gold",
+"gray"
+],
+"holdout": false,
+"source": "journal"
+},
+"7524": {
+"slot": "WAISTSLOT",
+"yes": [],
+"unsure": [
+"gold"
+],
+"holdout": false,
+"source": "journal"
+},
+"16577": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"blue",
+"white",
+"purple"
+],
+"holdout": false,
+"source": "journal"
+},
+"42229": {
+"slot": "CHESTSLOT",
+"yes": [],
+"unsure": [
+"gold",
+"gray",
+"blue"
+],
+"holdout": false,
+"source": "journal"
 }
 }
 }

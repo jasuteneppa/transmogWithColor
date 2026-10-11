@@ -109,7 +109,7 @@ def sweep_pages(labels, colours):
     per = {}
     for rec, _ in cc.load_pages():
         sw = rec.get("sweep")
-        if not isinstance(sw, dict):
+        if not isinstance(sw, dict) or "filter" not in sw:   # journal pages have no filter
             continue
         c = sw["filter"][2:]
         mo = out.setdefault(sw.get("matcher", "v1"), {k: [0, 0] for k in colours})

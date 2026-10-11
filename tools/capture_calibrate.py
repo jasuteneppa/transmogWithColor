@@ -63,6 +63,13 @@ def _table(it):
     while True:
         tok = next(it)
         if tok[0] == 5:  # }
+            if d and arr:
+                # WoW writes a sparse integer-keyed table partly as a list
+                # (with nil holes) and partly as [key] = value; both halves
+                # are the same table.
+                for i, v in enumerate(arr, 1):
+                    if v is not None:
+                        d.setdefault(i, v)
             return d if d else arr
         if tok[0] == 7:  # ,
             continue
@@ -118,7 +125,8 @@ def tile_boxes(rec, img_size):
     sw, sh = rec["screen"]
     iw, ih = img_size
     fx, fy = iw / sw, ih / sh
-    for vid, left, bottom, width, height in rec["tiles"]:
+    # journal tiles carry two more fields (greyed out, collected); see Capture.lua
+    for vid, left, bottom, width, height, *_ in rec["tiles"]:
         yield int(vid), (round(left * fx), round(ih - (bottom + height) * fy),
                          round((left + width) * fx), round(ih - bottom * fy))
 

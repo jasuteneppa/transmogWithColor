@@ -3,7 +3,11 @@ calibration and matching constants, so the addon matches with exactly the
 numbers the offline evaluation used. Regenerate after changing any of them.
 
     python export_swatches.py
-    python export_swatches.py --v2 palette_v2.json   # match_v2's fitted palette
+    python export_swatches.py --v2 palette_v2.json [label]   # match_v2's fitted palette
+
+label tags in-game sweep pages (Capture.lua records it); give each palette
+that goes into the game its own, or score.py merges its pages with an older
+one's.
 """
 import json
 from pathlib import Path
@@ -81,9 +85,9 @@ def header(version, neutral_k, source):
     ]
 
 
-def main_v2(path):
+def main_v2(path, label=None):
     pal = json.loads(Path(path).read_text(encoding="utf-8"))
-    lines = header("v2:" + Path(path).stem, pal["neutral_k"], Path(path).name)
+    lines = header("v2:" + (label or Path(path).stem), pal["neutral_k"], Path(path).name)
     groups = {}
     for sw in pal["swatches"]:
         L, A, B = sw["lab"]
@@ -106,8 +110,8 @@ def main_v2(path):
 
 def main():
     import sys
-    if len(sys.argv) == 3 and sys.argv[1] == "--v2":
-        return main_v2(sys.argv[2])
+    if len(sys.argv) in (3, 4) and sys.argv[1] == "--v2":
+        return main_v2(*sys.argv[2:])
     palette = json.loads((TOOLS / "palette.json").read_text(encoding="utf-8"))
     by_name = {p["name"]: p for p in palette}
     member_group = {m: g for g, _, ms, _ in GROUPS for m in ms}

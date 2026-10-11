@@ -12,6 +12,7 @@
 Palette.lua
 ColorData.lua
 Swatches.lua
+ColorScores.lua
 Matching.lua
 Core.lua
 ColorPicker.lua

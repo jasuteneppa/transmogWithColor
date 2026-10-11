@@ -1,9 +1,9 @@
 local _, ns = ...
 
 -- === Random outfit roller ===
--- Each armour slot gets one assigned MAIN colour; pressing Roll picks a random
--- collected appearance per assigned slot whose dominant cluster lands in that
--- colour's bucket, and sets it pending on the Transmogrifier so the character
+-- Each slot gets a POOL of colours (one or several); pressing Roll picks a
+-- random collected appearance per assigned slot from everything matching any
+-- colour in its pool, and sets it pending on the Transmogrifier so the character
 -- preview wears the whole outfit at once. Applying (and paying) is still
 -- Blizzard's Apply button -- SetPending only stages, and the player should get
 -- to look before committing gold.
@@ -213,52 +213,116 @@ local function GetCandidates(slot)
     return list
 end
 
--- The randomiser buckets colours MORE COARSELY than the filter does -- see
--- ns.ClassifyColorGrained. Rolling needs a pool to draw from, and the filter's
--- 41 buckets leave the thin ones (green_light is 201 appearances across the
--- whole game) with one or two pieces per slot, which is not something you can
--- randomise over.
-local function Grain()
-    return ns.state.randomizerGrain or ns.DEFAULT_GRAIN
+-- Colours are the filter's general colours (ns.MatchGroups), matched with the
+-- filter's own rule: an appearance can be rolled for a colour when
+-- ns.MatchScore says it matches (>= 1) -- learned scores where the appearance
+-- was captured from the journal, closeness matching on ColorData otherwise.
+-- One rule for both, so a colour that filters to twelve pieces rolls from
+-- those same twelve. (The roller used to have its own coarse buckets from the
+-- 1.2 classifier; saved slot colours from those are cleared by
+-- ROLL_SCHEME_VERSION.)
+local function Matches(vid, key)
+    return ns.HasMatchData(vid) and (ns.MatchScore(vid, key) or 0) >= 1
 end
 
--- `achromatic` is ColorData's 5th field. ns.BuildPaletteFromColors calls this
--- with the same four arguments, so the swatch grid and the roll agree.
-local function ClassifyForRoll(h, s, v, achromatic)
-    return ns.ClassifyColorGrained(h, s, v, Grain(), achromatic)
+-- A slot's pool is a SET of swatch keys: [key] = true for a colour to roll
+-- from, [key] = "exclude" for one to keep out (a piece that also has it is
+-- skipped). A pool of only exclusions rolls from everything else. A slot with
+-- an empty set is unassigned.
+local function SlotPool(slot)
+    local set = ns.state.slotColors[slot.invSlot]
+    return (type(set) == "table" and next(set)) and set or nil
 end
 
--- The cluster the piece READS as. Shared with the filter (ns.MainAndAccent in
--- Palette.lua) so the two cannot disagree about what colour an appearance is.
---
--- The roller used to have its own rule here, twice, and both were wrong. Raw
--- largest-area put 38.4% of appearances in a greyscale roll bucket and 11.2% in
--- black; a 0.70 neutral area penalty brought that to 29.5% and 8.8%. Both were
--- relative weightings, and both still left the greyscale buckets holding
--- obviously colourful armour, because only 3.7% of appearances have no coloured
--- region at all. The colour-first threshold states the intent directly instead.
--- visualID must be forwarded so hand corrections apply to the roller too. If
--- the filter honoured an override and the roller did not, the two would
--- disagree about what colour an appearance is -- exactly what sharing
--- ns.MainAndAccent exists to prevent.
-local function MainCluster(ranks, visualID)
-    local main = ns.MainAndAccent(ranks, visualID)
-    return main
+-- The roller's own More / Less, separate from the strip's (Core.lua InitDB).
+local function RollDetail()
+    return ns.state.rollDetail == "all" and "all" or "general"
 end
 
--- Every candidate whose dominant cluster is in the slot's assigned bucket.
-local function GetMatching(slot)
-    local color = ns.state.slotColors[slot.invSlot]
-    if not color then return nil end
-    local out = {}
-    for _, vid in ipairs(GetCandidates(slot)) do
-        local ranks = ns.ItemColors[vid]
-        local main = ranks and MainCluster(ranks, vid)
-        if main and ClassifyForRoll(main[1], main[2], main[3], main[5]) == color.key then
-            out[#out + 1] = vid
+-- Pool keys in strip order, so names and stripes always read the same way:
+-- the colours rolled from, or with `want` = "exclude" the excluded ones.
+local function PoolKeys(set, want)
+    want = want or true
+    local out, listed = {}, {}
+    for _, k in ipairs(ns.MatchStripKeys(RollDetail())) do
+        if set[k.key] == want then
+            out[#out + 1] = k.key
+            listed[k.key] = true
         end
     end
+    -- Keys from the other mode (General / Light and dark) still count.
+    for key, v in pairs(set) do
+        if v == want and not listed[key] then out[#out + 1] = key end
+    end
     return out
+end
+
+local function PoolName(set)
+    local function names(keys)
+        local out = {}
+        for _, key in ipairs(keys) do
+            local info = ns.MatchKeyInfo(key)
+            out[#out + 1] = info and info.name or key
+        end
+        return out
+    end
+    local wanted, excluded = names(PoolKeys(set)), names(PoolKeys(set, "exclude"))
+    local text = #wanted > 0 and table.concat(wanted, " + ") or "Any colour"
+    if #excluded > 0 then text = text .. ", not " .. table.concat(excluded, " / ") end
+    return text
+end
+
+-- Identity of a pool, for "do all the slots share one".
+local function PoolSignature(set)
+    if not set then return "" end
+    return table.concat(PoolKeys(set), "+") .. "|" .. table.concat(PoolKeys(set, "exclude"), "+")
+end
+
+local function CopyPool(set)
+    local out = {}
+    for key, v in pairs(set) do out[key] = v end
+    return out
+end
+
+-- Every candidate matching ANY colour in the slot's pool, each once -- so a
+-- gold and purple pool draws evenly from all the gold and purple pieces --
+-- minus any that also match an excluded colour.
+local function GetMatching(slot)
+    local set = SlotPool(slot)
+    if not set then return nil end
+    local anyWanted = false
+    for _, v in pairs(set) do
+        if v == true then anyWanted = true break end
+    end
+    local out = {}
+    for _, vid in ipairs(GetCandidates(slot)) do
+        local ok = not anyWanted and ns.HasMatchData(vid)
+        if anyWanted then
+            for key, v in pairs(set) do
+                if v == true and Matches(vid, key) then ok = true break end
+            end
+        end
+        if ok then
+            -- Looser than matching, like the strip's exclusions (Matching.lua).
+            for key, v in pairs(set) do
+                if v == "exclude" and ns.MatchExcluded(vid, key) then ok = false break end
+            end
+        end
+        if ok then out[#out + 1] = vid end
+    end
+    return out
+end
+
+-- A palette entry per swatch of the roller's layout (General, or Light and
+-- dark), in strip order, with its count. Every swatch is listed even at zero
+-- -- the picker dims those -- so the layout never shifts between slots.
+local function GroupPalette(count)
+    local palette = {}
+    for _, k in ipairs(ns.MatchStripKeys(RollDetail())) do
+        local h, s, v = ns.RGBToHSV(k.r, k.g, k.b)
+        palette[#palette + 1] = { key = k.key, h = h, s = s, v = v, count = count(k.key) }
+    end
+    return palette
 end
 
 local function GetSlotPalette(slot)
@@ -269,73 +333,40 @@ local function GetSlotPalette(slot)
     -- longer draws from.
     if slot.isWeapon then GetCandidates(slot) end
     local cached = slotPalettes[slot.invSlot]
-    if cached then return cached end
+    if cached and cached.detail == RollDetail() then return cached end
     local candidates = GetCandidates(slot)
-    -- Built with the SAME grained classifier AND the same cluster choice the
-    -- roll matches on, so a swatch's count is exactly the number of appearances
-    -- picking it can draw from.
-    local grain = Grain()
-    local palette = ns.BuildPaletteFromColors(function(fn)
+    local palette = GroupPalette(function(key)
+        local n = 0
         for _, vid in ipairs(candidates) do
-            local ranks = ns.ItemColors[vid]
-            local main = ranks and MainCluster(ranks, vid)
-            if main then fn(main) end
+            if Matches(vid, key) then n = n + 1 end
         end
-    end, ClassifyForRoll)
-
-    -- Draw each swatch as a canonical colour rather than the bucket average.
-    -- Averaging a coarse bucket produces a murky non-colour: "blue" spans navy
-    -- to sky to slate and averages to grey. The canonical value is used only if
-    -- it classifies back into its own bucket, so a swatch can never advertise a
-    -- colour that would match something else -- and it silently keeps the
-    -- average if that ever fails, rather than lying.
-    for _, swatch in ipairs(palette) do
-        local h, s, v, achromatic = ns.CanonicalSwatch(swatch.key, grain)
-        if h and ns.ClassifyColorGrained(h, s, v, grain, achromatic) == swatch.key then
-            swatch.h, swatch.s, swatch.v = h, s, v
-        end
-    end
+        return n
+    end)
+    palette.detail = RollDetail()
     slotPalettes[slot.invSlot] = palette
     return palette
 end
 
--- The palette for "set every slot to one colour".
---
--- Its count is the number of SLOTS that can supply the colour, NOT the total
--- appearances -- the question this button asks is "can a full outfit be built in
--- this colour", and 400 appearances all sitting in Chest answers that wrongly.
--- Achieved by emitting at most one cluster per slot per bucket, so the count
--- BuildPaletteFromColors arrives at is a slot count by construction rather than
--- a second number computed some other way.
+-- The palette for "set every slot to one colour". Its count is the number of
+-- SLOTS that can supply the colour, NOT the total appearances -- the question
+-- this button asks is "can a full outfit be built in this colour", and 400
+-- appearances all sitting in Chest answers that wrongly.
 local function GetAllSlotsPalette()
-    if allSlotsPalette then return allSlotsPalette end
-    local grain = Grain()
-    local palette = ns.BuildPaletteFromColors(function(fn)
+    if allSlotsPalette and allSlotsPalette.detail == RollDetail() then return allSlotsPalette end
+    allSlotsPalette = GroupPalette(function(key)
+        local n = 0
         for _, slot in ipairs(SLOTS) do
-            local seen = {}
             for _, vid in ipairs(GetCandidates(slot)) do
-                local ranks = ns.ItemColors[vid]
-                local main = ranks and MainCluster(ranks, vid)
-                if main then
-                    local key = ClassifyForRoll(main[1], main[2], main[3], main[5])
-                    if not seen[key] then
-                        seen[key] = true
-                        fn(main)
-                    end
+                if Matches(vid, key) then
+                    n = n + 1
+                    break
                 end
             end
         end
-    end, ClassifyForRoll)
-
-    for _, swatch in ipairs(palette) do
-        local h, s, v, achromatic = ns.CanonicalSwatch(swatch.key, grain)
-        if h and ns.ClassifyColorGrained(h, s, v, grain, achromatic) == swatch.key then
-            swatch.h, swatch.s, swatch.v = h, s, v
-        end
-    end
-
-    allSlotsPalette = palette
-    return palette
+        return n
+    end)
+    allSlotsPalette.detail = RollDetail()
+    return allSlotsPalette
 end
 
 -- === Rolling ===
@@ -636,7 +667,7 @@ local function RollAll(verbose)
             lastRoll[slot.invSlot] = { failed = reason }
             missing = missing + 1
             failures[reason] = (failures[reason] or 0) + 1
-            local color = ns.state.slotColors[slot.invSlot]
+            local pool = SlotPool(slot)
             local matching = GetMatching(slot)
             -- Assigned to a local FIRST: on an empty slot GetInventoryItemID
             -- returns no values at all rather than nil, and `tostring(f())`
@@ -644,7 +675,7 @@ local function RollAll(verbose)
             -- assignment is what coerces "nothing" into nil.
             local equipped = GetInventoryItemID("player", slot.invSlot)
             diag[#diag + 1] = ("%s: FAILED %s | colour=%s candidates=%d matching=%d equipped=%s | %s"):format(
-                slot.name, reason, color and color.key or "nil",
+                slot.name, reason, pool and table.concat(PoolKeys(pool), "+") or "nil",
                 #GetCandidates(slot), matching and #matching or -1,
                 tostring(equipped), tostring(detail))
         end
@@ -1085,10 +1116,10 @@ function ns.DumpWeaponCategories()
                     end
                 end
                 lines[#lines + 1] = ("   -> pooled candidates: %d"):format(#GetCandidates(slot))
-                local color = ns.state.slotColors[slot.invSlot]
+                local pool = SlotPool(slot)
                 local matching = GetMatching(slot)
-                lines[#lines + 1] = ("   -> colour=%s matching=%s"):format(
-                    color and color.key or "(none)", matching and #matching or "n/a")
+                lines[#lines + 1] = ("   -> colours=%s matching=%s"):format(
+                    pool and table.concat(PoolKeys(pool), "+") or "(none)", matching and #matching or "n/a")
             end
         end
     end
@@ -1575,11 +1606,11 @@ local function ShowSwatchTooltip(self)
         end
     end
 
-    local color = ns.state.slotColors[slot.invSlot]
-    if color then
+    local pool = SlotPool(slot)
+    if pool then
         local matching = GetMatching(slot)
         local n = matching and #matching or 0
-        GameTooltip:AddLine(("%s - %d option%s"):format(color.key, n, n == 1 and "" or "s"), 0.8, 0.8, 0.8)
+        GameTooltip:AddLine(("%s - %d option%s"):format(PoolName(pool), n, n == 1 and "" or "s"), 0.8, 0.8, 0.8, true)
     else
         local n = #GetCandidates(slot)
         GameTooltip:AddLine(("no colour set - %d collected appearance%s"):format(n, n == 1 and "" or "s"), 0.8, 0.8, 0.8)
@@ -1596,7 +1627,8 @@ local function ShowSwatchTooltip(self)
         GameTooltip:AddLine("No usable source", 1, 0.5, 0.5)
     end
 
-    GameTooltip:AddLine("Click to pick a colour", 1, 1, 1)
+    GameTooltip:AddLine("Click to pick colours (several make a pool)", 1, 1, 1)
+    GameTooltip:AddLine("In the picker, middle-click or Shift-click excludes a colour", 0.6, 0.6, 0.6, true)
     GameTooltip:AddLine("Right-click to clear", 0.6, 0.6, 0.6)
     GameTooltip:Show()
 end
@@ -1637,40 +1669,78 @@ local function CreateSwatch(parent, slot, size)
     return btn
 end
 
+-- Switches the roller between General and Light and dark: every slot's pool
+-- is carried across (a colour becomes its two halves and back), then `reopen`
+-- redraws the picker that asked.
+local function ToggleRollDetail(reopen)
+    local toAll = RollDetail() ~= "all"
+    for invSlot, set in pairs(ns.state.slotColors) do
+        local t = ns.TranslateSelection(set, toAll)
+        ns.state.slotColors[invSlot] = (t and next(t)) and t or nil
+    end
+    ns.state.rollDetail = toAll and "all" or "general"
+    InvalidateSlots()
+    ns.RefreshRandomizerPanel()
+    reopen()
+end
+
 OpenSlotPicker = function(swatch)
     local slot = swatch.slot
     local palette = GetSlotPalette(slot)
-    local title = slot.name .. " colour"
-    if #palette == 0 then
-        title = title .. "  |cffff8080(no collected appearances with colour data)|r"
+    local selected = CopyPool(SlotPool(slot) or {})
+    local function store()
+        ns.state.slotColors[slot.invSlot] = next(selected) and CopyPool(selected) or nil
+        lastRoll[slot.invSlot] = nil
+        ns.RefreshRandomizerPanel()
     end
     ns.OpenSwatchPicker({
-        title = title,
+        title = slot.name .. " colours",
         palette = palette,
-        onPick = function(color)
-            ns.state.slotColors[slot.invSlot] = color
-            lastRoll[slot.invSlot] = nil
-            ns.RefreshRandomizerPanel()
-        end,
+        columns = ns.MatchStripColumns(RollDetail()),
+        detailText = RollDetail() == "all" and "Less" or "More",
+        onToggleDetail = function() ToggleRollDetail(function() OpenSlotPicker(swatch) end) end,
+        multi = true,
+        selected = selected,
+        onChange = store,
         onClear = function()
-            ns.state.slotColors[slot.invSlot] = nil
-            lastRoll[slot.invSlot] = nil
-            ns.RefreshRandomizerPanel()
+            wipe(selected)
+            store()
         end,
     }, swatch, "TOPLEFT", "BOTTOMLEFT", 0, -4)
 end
 
+-- A pool shows as side-by-side stripes, one per colour, in strip order.
 local function RefreshSwatch(btn)
-    local color = ns.state.slotColors[btn.slot.invSlot]
-    if color then
-        local r, g, b = ns.HSVToRGB(color.h, color.s, color.v)
-        btn.Swatch:SetColorTexture(r, g, b)
-        btn.Swatch:Show()
-        btn.Empty:Hide()
-    else
-        btn.Swatch:Hide()
-        btn.Empty:Show()
+    local pool = SlotPool(btn.slot)
+    local keys = pool and PoolKeys(pool) or {}
+    btn.stripes = btn.stripes or { btn.Swatch }
+    local inner = btn:GetWidth() - 2
+    for i, key in ipairs(keys) do
+        local tex = btn.stripes[i]
+        if not tex then
+            tex = btn:CreateTexture(nil, "ARTWORK")
+            btn.stripes[i] = tex
+        end
+        local info = ns.MatchKeyInfo(key)
+        tex:SetColorTexture(info and info.r or 0.5, info and info.g or 0.5, info and info.b or 0.5)
+        tex:ClearAllPoints()
+        tex:SetPoint("TOPLEFT", btn, "TOPLEFT", 1 + inner * (i - 1) / #keys, -1)
+        tex:SetPoint("BOTTOMRIGHT", btn, "BOTTOMLEFT", 1 + inner * i / #keys, 1)
+        tex:Show()
     end
+    for i = #keys + 1, #btn.stripes do btn.stripes[i]:Hide() end
+    -- Excluded colours: a red x over the swatch (the tooltip names them).
+    local excluding = pool and #PoolKeys(pool, "exclude") > 0
+    if not btn.ExcludeMark then
+        btn.ExcludeMark = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        btn.ExcludeMark:SetPoint("CENTER", 0, 0)
+        btn.ExcludeMark:SetText("x")
+        btn.ExcludeMark:SetTextColor(1, 0.15, 0.15)
+        btn.ExcludeMark:SetShadowColor(0, 0, 0, 1)
+        btn.ExcludeMark:SetShadowOffset(1, -1)
+    end
+    btn.ExcludeMark:SetShown(excluding)
+    if #keys > 0 or excluding then btn.Empty:Hide() else btn.Empty:Show() end
     -- A red rim is the only room a 16px swatch has to say the last roll found
     -- nothing; the reason itself is in the tooltip.
     local roll = lastRoll[btn.slot.invSlot]
@@ -1819,37 +1889,46 @@ local function AttachSwatches()
             -- button. Both are set to the same width so the pair reads as a
             -- column rather than two mismatched buttons.
             allButton:SetSize(BUTTON_WIDTH, 20)
-            allButton:SetText("Single Color")
+            allButton:SetText("All Slots")
             allButton:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-                GameTooltip:SetText("Set every slot to one colour")
-                GameTooltip:AddLine("Assigns the colour you pick to all slots at once, replacing what is there. Roll afterwards to stage the outfit.", 0.8, 0.8, 0.8, true)
+                GameTooltip:SetText("Colours for every slot")
+                GameTooltip:AddLine("The colours you pick become one pool every slot rolls from: pick gold and purple, and each slot rolls from all your gold and purple pieces. Middle-click or Shift-click a colour to keep out pieces that have it. Replaces what the slots had. Roll afterwards to stage the outfit.", 0.8, 0.8, 0.8, true)
                 GameTooltip:Show()
             end)
             allButton:SetScript("OnLeave", GameTooltip_Hide)
-            allButton:SetScript("OnClick", function(self)
-                local palette = GetAllSlotsPalette()
-                local title = "Colour for every slot"
-                if #palette == 0 then
-                    title = title .. "  |cffff8080(no collected appearances with colour data)|r"
+            local function OpenAllPicker(self)
+                -- Starts from the slots' shared pool when every slot has the
+                -- same one (i.e. this button set it last time).
+                local first, same = nil, true
+                for _, slot in ipairs(SLOTS) do
+                    local name = PoolSignature(SlotPool(slot))
+                    if first == nil then first = name elseif name ~= first then same = false end
+                end
+                local selected = CopyPool((same and SlotPool(SLOTS[1])) or {})
+                local function store()
+                    for _, slot in ipairs(SLOTS) do
+                        ns.state.slotColors[slot.invSlot] = next(selected) and CopyPool(selected) or nil
+                    end
+                    wipe(lastRoll)
+                    ns.RefreshRandomizerPanel()
                 end
                 ns.OpenSwatchPicker({
-                    title = title,
-                    palette = palette,
-                    onPick = function(color)
-                        for _, slot in ipairs(SLOTS) do
-                            ns.state.slotColors[slot.invSlot] = color
-                        end
-                        wipe(lastRoll)
-                        ns.RefreshRandomizerPanel()
-                    end,
+                    title = "Colours for every slot",
+                    palette = GetAllSlotsPalette(),
+                    columns = ns.MatchStripColumns(RollDetail()),
+                    detailText = RollDetail() == "all" and "Less" or "More",
+                    onToggleDetail = function() ToggleRollDetail(function() OpenAllPicker(self) end) end,
+                    multi = true,
+                    selected = selected,
+                    onChange = store,
                     onClear = function()
-                        wipe(ns.state.slotColors)
-                        wipe(lastRoll)
-                        ns.RefreshRandomizerPanel()
+                        wipe(selected)
+                        store()
                     end,
                 }, self, "TOP", "BOTTOM", 0, -4)
-            end)
+            end
+            allButton:SetScript("OnClick", OpenAllPicker)
         end
         allButton:SetParent(parent)
         allButton:SetFrameLevel(host:GetFrameLevel() + 10)
@@ -1976,10 +2055,10 @@ end
 ns.RollRandomOutfit = RollAll
 
 -- For /tmpalette slots. Returns collected-candidate count, how many of those
--- match the slot's assigned colour (nil when unassigned), and the colour key.
+-- match the slot's colour pool (nil when unassigned), and the pool's keys.
 function ns.GetSlotDebug(slot)
-    local color = ns.state.slotColors[slot.invSlot]
+    local pool = SlotPool(slot)
     local matching = GetMatching(slot)
-    return #GetCandidates(slot), matching and #matching or nil, color and color.key
+    return #GetCandidates(slot), matching and #matching or nil, pool and table.concat(PoolKeys(pool), "+")
 end
 

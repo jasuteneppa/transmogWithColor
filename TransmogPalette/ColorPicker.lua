@@ -69,11 +69,14 @@ local function AfterSelectionChange()
     RefreshAll()
 end
 
+-- A colour is wanted (main / accent) or excluded, never both: picking one
+-- side takes it off the other.
 local function ToggleMain(key)
     if ns.state.primaryColors[key] then
         ns.state.primaryColors[key] = nil
     else
         ns.state.primaryColors[key] = SelectionColor(key)
+        ns.state.excludeColors[key] = nil
     end
     AfterSelectionChange()
 end
@@ -84,22 +87,42 @@ local function ToggleAccent(key)
         ns.state.accentColor = nil
     else
         ns.state.accentColor = SelectionColor(key)
+        ns.state.excludeColors[key] = nil
     end
     AfterSelectionChange()
+end
+
+local function ToggleExclude(key)
+    if ns.state.excludeColors[key] then
+        ns.state.excludeColors[key] = nil
+    else
+        ns.state.excludeColors[key] = true
+        ns.state.primaryColors[key] = nil
+        local accent = ns.state.accentColor
+        if accent and accent.key == key then ns.state.accentColor = nil end
+    end
+    AfterSelectionChange()
+end
+
+-- Middle-click, or Shift+left-click for a mouse without a middle button.
+function ns.IsExcludeClick(button)
+    return button == "MiddleButton" or (button == "LeftButton" and IsShiftKeyDown())
 end
 
 local function ClearAll()
     ns.state.primaryColors = {}
     ns.state.accentColor = nil
+    ns.state.excludeColors = {}
     AfterSelectionChange()
 end
 
 -- Development (Capture.lua's sweep): replace the whole filter at once. Takes
--- the primaryColors set and accent as stored, so a saved filter goes straight
--- back in afterwards.
-function ns.SetFilterForCapture(primarySet, accent)
+-- the primaryColors set, accent and excluded set as stored, so a saved filter
+-- goes straight back in afterwards.
+function ns.SetFilterForCapture(primarySet, accent, excludeSet)
     ns.state.primaryColors = primarySet or {}
     ns.state.accentColor = accent
+    ns.state.excludeColors = excludeSet or {}
     AfterSelectionChange()
 end
 
@@ -155,23 +178,76 @@ local function CreateSwatchPopup()
     popup.Title = popup:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     popup.Title:SetPoint("TOPLEFT", 12, -10)
 
+    -- Close at the far right, as on Blizzard's windows; Clear (and the
+    -- roller's More / Less) step left from it.
+    popup.CloseButton = CreateFrame("Button", nil, popup, "UIPanelCloseButton")
+    popup.CloseButton:SetSize(22, 22)
+    popup.CloseButton:SetPoint("TOPRIGHT", -6, -7)
+    popup.CloseButton:SetScript("OnClick", function() popup:Hide() end)
+
     popup.ClearButton = CreateFrame("Button", nil, popup, "UIPanelButtonTemplate")
     popup.ClearButton:SetSize(70, 20)
-    popup.ClearButton:SetPoint("TOPRIGHT", -10, -8)
+    popup.ClearButton:SetPoint("RIGHT", popup.CloseButton, "LEFT", -2, 0)
     popup.ClearButton:SetText("Clear")
     popup.ClearButton:SetScript("OnClick", function()
         popup.onClear()
-        popup:Hide()
+        -- A pool picker stays open so it can be refilled straight away.
+        if popup.spec and popup.spec.multi then
+            popup.Refresh()
+        else
+            popup:Hide()
+        end
     end)
 
+
+    -- Optional More / Less for pickers with their own detail (the roller's).
+    popup.DetailButton = CreateFrame("Button", nil, popup, "UIPanelButtonTemplate")
+    popup.DetailButton:SetSize(46, 20)
+    popup.DetailButton:SetPoint("RIGHT", popup.ClearButton, "LEFT", -4, 0)
+    popup.DetailButton:SetScript("OnClick", function()
+        if popup.spec and popup.spec.onToggleDetail then popup.spec.onToggleDetail() end
+    end)
+    popup.DetailButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText("Light and dark")
+        GameTooltip:AddLine("Splits each colour into a light and a dark half, or joins them back.", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    popup.DetailButton:SetScript("OnLeave", GameTooltip_Hide)
+    popup.DetailButton:Hide()
+
     popup.buttons = {}
+    popup.Refresh = function()
+        local selected = popup.spec and popup.spec.multi and popup.spec.selected
+        for _, btn in ipairs(popup.buttons) do
+            if btn:IsShown() and btn.swatch then
+                local on = selected and selected[btn.swatch.key]
+                if on == "exclude" then
+                    btn:SetBackdropBorderColor(1, 0.15, 0.15, 1)
+                else
+                    btn:SetBackdropBorderColor(on and 1 or 0, on and 0.82 or 0, 0, 1)
+                end
+                if btn.ExcludeMark then btn.ExcludeMark:SetShown(on == "exclude") end
+                local n = btn.swatch.count
+                btn.Swatch:SetAlpha((n == 0 and not on) and 0.15 or 1)
+            end
+        end
+    end
     return popup
 end
 
--- `spec` is { title, palette, onPick, onClear }.
+-- `spec` is { title, palette, onPick, onClear, columns? } for a one-shot pick,
+-- or with `multi = true, selected = set, onChange()` for a pool: clicking a
+-- swatch toggles it in `selected` (true, gold border) and the popup stays
+-- open; middle- or shift-click toggles it as excluded ("exclude", red X).
+-- `detailText` + `onToggleDetail()` add a More / Less button.
 local function LayoutSwatchPopup(popup, spec)
     popup.onClear = spec.onClear
+    popup.spec = spec
     popup.Title:SetText(spec.title)
+    popup.DetailButton:SetShown(spec.onToggleDetail ~= nil)
+    if spec.detailText then popup.DetailButton:SetText(spec.detailText) end
+    local columns = spec.columns or GRID_COLUMNS
 
     local palette = spec.palette
     for i, swatch in ipairs(palette) do
@@ -184,6 +260,14 @@ local function LayoutSwatchPopup(popup, spec)
             btn.Swatch = btn:CreateTexture(nil, "ARTWORK")
             btn.Swatch:SetPoint("TOPLEFT", 1, -1)
             btn.Swatch:SetPoint("BOTTOMRIGHT", -1, 1)
+            btn.ExcludeMark = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            btn.ExcludeMark:SetPoint("CENTER", 0, 0)
+            btn.ExcludeMark:SetText("X")
+            btn.ExcludeMark:SetTextColor(1, 0.15, 0.15)
+            btn.ExcludeMark:SetShadowColor(0, 0, 0, 1)
+            btn.ExcludeMark:SetShadowOffset(1, -1)
+            btn.ExcludeMark:Hide()
+            btn:RegisterForClicks("LeftButtonUp", "MiddleButtonUp")
             btn:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
                 GameTooltip:SetText(BucketLabel(self.swatch.key))
@@ -195,21 +279,45 @@ local function LayoutSwatchPopup(popup, spec)
                 if n then
                     GameTooltip:AddLine(("%d appearance%s"):format(n, n == 1 and "" or "s"), 0.8, 0.8, 0.8)
                 end
+                local spec = swatchPopup and swatchPopup.spec
+                if spec and spec.multi then
+                    local on = spec.selected[self.swatch.key]
+                    if on == "exclude" then
+                        GameTooltip:AddLine("Excluded: pieces that also have this colour are skipped", 1, 0.4, 0.4, true)
+                    end
+                    GameTooltip:AddLine(on == true and "Click to remove from the pool" or "Click to add to the pool", 1, 1, 1)
+                    GameTooltip:AddLine(on == "exclude" and "Middle-click or Shift-click to stop excluding"
+                        or "Middle-click or Shift-click to exclude", 0.7, 0.7, 0.7)
+                end
                 GameTooltip:Show()
             end)
             btn:SetScript("OnLeave", GameTooltip_Hide)
             popup.buttons[i] = btn
         end
 
-        local col = (i - 1) % GRID_COLUMNS
-        local row = math.floor((i - 1) / GRID_COLUMNS)
+        local col = (i - 1) % columns
+        local row = math.floor((i - 1) / columns)
         btn:ClearAllPoints()
         btn:SetPoint("TOPLEFT", popup, "TOPLEFT", 12 + col * (POPUP_SWATCH_SIZE + 4), -36 - row * (POPUP_SWATCH_SIZE + 4))
 
         local r, g, b = ns.HSVToRGB(swatch.h, swatch.s, swatch.v)
         btn.Swatch:SetColorTexture(r, g, b)
         btn.swatch = swatch
-        btn:SetScript("OnClick", function()
+        btn:SetScript("OnClick", function(self, button)
+            if spec.multi then
+                local key = swatch.key
+                if ns.IsExcludeClick(button) then
+                    spec.selected[key] = (spec.selected[key] ~= "exclude") and "exclude" or nil
+                else
+                    spec.selected[key] = (spec.selected[key] ~= true) or nil
+                end
+                spec.onChange()
+                popup.Refresh()
+                -- The tooltip's count line is unchanged, but its owner moved on.
+                if self:GetScript("OnEnter") then self:GetScript("OnEnter")(self) end
+                return
+            end
+            if button ~= "LeftButton" then return end
             -- Carry the bucket key the swatch was built from rather than
             -- re-deriving it from the averaged h/s/v at match time, which
             -- could land in a neighbouring bucket near a band boundary.
@@ -221,16 +329,29 @@ local function LayoutSwatchPopup(popup, spec)
 
     for i = #palette + 1, #popup.buttons do
         popup.buttons[i]:Hide()
+        popup.buttons[i].swatch = nil
     end
+    popup.Refresh()
 
-    local rows = math.ceil(#palette / GRID_COLUMNS)
-    popup:SetSize(12 + GRID_COLUMNS * (POPUP_SWATCH_SIZE + 4) + 8, 44 + rows * (POPUP_SWATCH_SIZE + 4))
+    local rows = math.max(1, math.ceil(#palette / columns))
+    -- Wide enough for the title and the Clear / close buttons too.
+    local width = math.max(12 + columns * (POPUP_SWATCH_SIZE + 4) + 8,
+        popup.Title:GetStringWidth() + (spec.onToggleDetail and 180 or 130))
+    popup:SetSize(width, 44 + rows * (POPUP_SWATCH_SIZE + 4))
 end
 
 function ns.OpenSwatchPicker(spec, anchorFrame, point, relPoint, x, y)
     if not swatchPopup then
         swatchPopup = CreateSwatchPopup()
+        -- Parented to UIParent (it must not be clipped by the window it opens
+        -- from), so it would outlive that window: closing the Transmogrifier
+        -- left the roller's picker floating on screen. It goes when the frame
+        -- it was opened from stops being visible.
+        swatchPopup:SetScript("OnUpdate", function(self)
+            if self.anchor and not self.anchor:IsVisible() then self:Hide() end
+        end)
     end
+    swatchPopup.anchor = anchorFrame
     LayoutSwatchPopup(swatchPopup, spec)
     swatchPopup:ClearAllPoints()
     swatchPopup:SetPoint(point or "TOP", anchorFrame, relPoint or "BOTTOM", x or 0, y or -4)
@@ -302,6 +423,13 @@ local function SwatchTooltip(self)
         GameTooltip:AddLine("Right-click to use as the accent", 0.7, 0.7, 0.7)
         GameTooltip:AddLine("The accent narrows every main colour at once", 0.6, 0.6, 0.6)
     end
+    if ns.state.excludeColors[self.key] then
+        GameTooltip:AddLine("Excluded: pieces that also have this colour are hidden", 1, 0.4, 0.4, true)
+        GameTooltip:AddLine("Middle-click or Shift-click to stop excluding", 1, 1, 1)
+    else
+        GameTooltip:AddLine("Middle-click or Shift-click to exclude", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("Hides every piece that also has this colour", 0.6, 0.6, 0.6)
+    end
     GameTooltip:Show()
 end
 
@@ -328,9 +456,20 @@ local function CreateStripSwatch(panel)
     btn.AccentMark:SetColorTexture(1, 1, 1, 1)
     btn.AccentMark:Hide()
 
-    btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    -- Excluded: a red border and a red X over the colour.
+    btn.ExcludeMark = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    btn.ExcludeMark:SetPoint("CENTER", 0, 0)
+    btn.ExcludeMark:SetText("X")
+    btn.ExcludeMark:SetTextColor(1, 0.15, 0.15)
+    btn.ExcludeMark:SetShadowColor(0, 0, 0, 1)
+    btn.ExcludeMark:SetShadowOffset(1, -1)
+    btn.ExcludeMark:Hide()
+
+    btn:RegisterForClicks("LeftButtonUp", "RightButtonUp", "MiddleButtonUp")
     btn:SetScript("OnClick", function(self, button)
-        if button == "RightButton" then
+        if ns.IsExcludeClick(button) then
+            ToggleExclude(self.key)
+        elseif button == "RightButton" then
             ToggleAccent(self.key)
         else
             ToggleMain(self.key)
@@ -350,6 +489,8 @@ end
 -- surprising, and the zero in the tooltip is the honest signal.
 local function RefreshStripSwatch(btn, anySelected)
     local isMain = ns.state.primaryColors[btn.key] ~= nil
+    local isExcluded = ns.state.excludeColors[btn.key] ~= nil
+    btn.ExcludeMark:SetShown(isExcluded)
     local accent = ns.state.accentColor
     local isAccent = accent and accent.key == btn.key
 
@@ -368,7 +509,12 @@ local function RefreshStripSwatch(btn, anySelected)
         btn.Swatch:SetAlpha(0.4)
     end
 
-    if isMain then
+    if isExcluded then
+        -- Always lit: an excluded colour counts zero by definition, and the
+        -- dimming for "nothing here" would hide that it is switched on.
+        btn.Swatch:SetAlpha(1)
+        btn:SetBackdropBorderColor(1, 0.15, 0.15, 1)
+    elseif isMain then
         btn:SetBackdropBorderColor(1, 0.82, 0, 1)
     else
         btn:SetBackdropBorderColor(0, 0, 0, 1)
@@ -395,7 +541,7 @@ local function Counts()
     local keys = ns.MatchStripKeys()
     local mains, accents = {}, {}
     for _, vid in ipairs(visuals) do
-        if ns.HasColorData(vid) then
+        if ns.HasMatchData(vid) then
             local asMain = ns.MatchesFilterExcept(vid, "primary")
             local asAccent = ns.MatchesFilterExcept(vid, "accent")
             if asMain or asAccent then
@@ -432,6 +578,9 @@ local function LayoutPanel(panel)
     if not available or available < 120 then available = 440 end
     local columns = math.floor((available - 2 * PANEL_INSET) / (SWATCH_SIZE + SWATCH_GAP))
     columns = math.max(MIN_COLUMNS, math.min(MAX_COLUMNS, columns))
+    -- Light over dark: one column per colour (Matching.lua).
+    local fixed = ns.MatchStripColumns and ns.MatchStripColumns()
+    if fixed then columns = fixed end
 
     for i, k in ipairs(keys) do
         local btn = panel.swatches[i]
@@ -514,9 +663,11 @@ end
 
 local function PlaceStrip(panel)
     panel:ClearAllPoints()
-    local pos = ns.state and ns.state.stripPos
+    local pos = ns.state and ns.state[panel.posKey]
     if pos then
         panel:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    elseif panel.place then
+        panel.place(panel)
     elseif panel.anchorFrame then
         panel:SetPoint("TOPRIGHT", panel.anchorFrame, "BOTTOMRIGHT", 0, -6)
     else
@@ -525,14 +676,19 @@ local function PlaceStrip(panel)
 end
 
 function ns.ResetStripPosition()
-    ns.state.stripPos = nil
-    for _, panel in ipairs(ns.panels) do PlaceStrip(panel) end
+    for _, panel in ipairs(ns.panels) do
+        ns.state[panel.posKey] = nil
+        PlaceStrip(panel)
+    end
 end
 
-local function CreatePanel(name, host, anchorFrame)
+local function CreatePanel(name, host, anchorFrame, opts)
     local panel = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
     panel.host = host
     panel.anchorFrame = anchorFrame
+    -- Each window's strip keeps its own dragged position.
+    panel.posKey = opts.posKey or "stripPos"
+    panel.place = opts.place
     -- Opaque, because wherever it is dragged the strip sits in front of
     -- something. Floating unbacked swatches read as a rendering fault; a
     -- bordered panel reads as something deliberately on top.
@@ -543,7 +699,10 @@ local function CreatePanel(name, host, anchorFrame)
         insets = { left = 3, right = 3, top = 3, bottom = 3 },
     })
     panel:SetBackdropColor(0.05, 0.05, 0.05, 0.96)
-    panel:SetFrameStrata("HIGH")
+    -- Above the window it serves: the Collections journal is HIGH and
+    -- toplevel, so at the same strata clicking the journal raised it over the
+    -- strip, burying it with no way to drag it back out.
+    panel:SetFrameStrata(opts.strata or "HIGH")
     -- The strip sits over the appearance grid, so it has to swallow clicks on
     -- its own background. Without this a click on the gap between two swatches
     -- falls through and selects whatever appearance is underneath.
@@ -562,7 +721,7 @@ local function CreatePanel(name, host, anchorFrame)
         -- and two owners would fight after a /tmpalette resetpos.
         self:SetUserPlaced(false)
         local point, _, relPoint, x, y = self:GetPoint(1)
-        ns.state.stripPos = { point, relPoint, x, y }
+        ns.state[self.posKey] = { point, relPoint, x, y }
         PlaceStrip(self)
     end)
     PlaceStrip(panel)
@@ -610,10 +769,10 @@ local function CreatePanel(name, host, anchorFrame)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         if ns.MatchDetail() == "all" then
             GameTooltip:SetText("Fewer colours")
-            GameTooltip:AddLine("Groups the shades back into one swatch per colour.", 0.8, 0.8, 0.8, true)
+            GameTooltip:AddLine("Joins each colour's light and dark halves back into one swatch.", 0.8, 0.8, 0.8, true)
         else
-            GameTooltip:SetText("More colours")
-            GameTooltip:AddLine("Shows every shade: maroon and red, bronze and brown, jade, teal, slate and more.", 0.8, 0.8, 0.8, true)
+            GameTooltip:SetText("Light and dark")
+            GameTooltip:AddLine("Splits each colour into a light and a dark half, judged against other pieces of the same colour in the same slot.", 0.8, 0.8, 0.8, true)
         end
         GameTooltip:AddLine("Your picks carry across.", 0.6, 0.6, 0.6)
         GameTooltip:Show()
@@ -659,8 +818,13 @@ end
 -- Called by Core.lua once the Transmogrifier frame exists. Creates one strip
 -- anchored near `anchorFrame` inside `parent`, and registers `refreshFn` to be
 -- called whenever the selection changes so the filter gets re-applied.
-function ns.RegisterColorPanel(host, anchorFrame, refreshFn)
-    local panel = CreatePanel("TransmogPalettePanel" .. (#ns.panels + 1), host, anchorFrame)
+-- `opts` (optional): posKey = the saved-position field for this strip;
+-- place(panel) = its default spot; visible() = false hides it while its list is
+-- up (the journal capture, which must not have the strip over the tiles).
+function ns.RegisterColorPanel(host, anchorFrame, refreshFn, opts)
+    opts = opts or {}
+    local panel = CreatePanel("TransmogPalettePanel" .. (#ns.panels + 1), host, anchorFrame, opts)
+    panel.wanted = opts.visible
     table.insert(ns.panels, panel)
     if refreshFn then
         table.insert(refreshCallbacks, refreshFn)
@@ -668,8 +832,15 @@ function ns.RegisterColorPanel(host, anchorFrame, refreshFn)
     -- Not a child of the list, so it has to be told when the list comes and
     -- goes -- closing the Transmogrifier or switching to the Sets tab must
     -- take the strip with it.
-    host:HookScript("OnShow", function() panel:Show() end)
+    host:HookScript("OnShow", function() panel:SetShown(not panel.wanted or panel.wanted()) end)
     host:HookScript("OnHide", function() panel:Hide() end)
-    panel:SetShown(host:IsVisible())
+    panel:SetShown(host:IsVisible() and (not panel.wanted or panel.wanted()))
     LayoutPanel(panel)
+end
+
+-- Re-applies each strip's visible() rule (Capture.lua, around a journal capture).
+function ns.SyncColorPanelVisibility()
+    for _, panel in ipairs(ns.panels) do
+        panel:SetShown(panel.host:IsVisible() and (not panel.wanted or panel.wanted()))
+    end
 end

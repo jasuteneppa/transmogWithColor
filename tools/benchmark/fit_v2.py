@@ -8,7 +8,8 @@
    while it helps by MIN_GAIN. (Placing swatches at each item's largest
    coloured cluster instead put a "purple" on gold trim and a "gold" on
    brown leather: an item's biggest patch is often not its named colour.)
-2. Cutoffs maximise F1 of returned vs clear items. F1, not wrong + missed:
+2. Cutoffs maximise F1 (F-beta where BETA says) of returned vs clear items.
+   F1, not wrong + missed:
    where a colour separates poorly, wrong + missed is lowest by returning
    everything, which is useless to a player.
 3. neutral_k, how hard an item's coloured share pushes it out of the greys,
@@ -32,6 +33,19 @@ import naming_compare as nc  # noqa: E402
 NEUTRALS = ("black", "gray", "white")
 MAX_K = int(__import__("os").environ.get("FIT_MAX_K", 3))
 MIN_GAIN = 0.02
+# Cutoff objective per colour: F-beta, beta < 1 weighs wrong results above
+# misses. Gold's marginal matches are mostly bronze / dark orange metal that
+# players do not call gold (in-game sweep: 8 of 51 page-1 tiles wrong at F1;
+# 2-fold CV at F0.35: wrong 28% -> 8%, missed 38% -> 50%, 1.3.0 missed 70%).
+# Colours in KEEP_V1 take the 1.3.0 swatches and cutoffs from palette.json
+# unchanged: purple's one-swatch fit was unstable across folds (unseen-fold
+# wrong 21% / 50%) and never beat 1.3.0 on both wrong and missed. v2's
+# chromatic score is the same formula, so these match exactly as 1.3.0 did.
+KEEP_V1 = {"purple": ("purple", "violet")}  # first one is the strip face
+BETA = {"gold": 0.35}
+BETA.update((c, float(b)) for c, b in (kv.split("=") for kv in
+            __import__("os").environ.get("FIT_BETA", "").split(",") if kv))  # e.g. FIT_BETA=purple=0.7
+_beta = 1.0
 NK_GRID = (0.0, 0.5, 0.75, 1.0, 1.5, 2.0)
 
 
@@ -46,7 +60,7 @@ def f1_at(raw, truth, t):
     if tp == 0:
         return 0.0, 1.0, 1.0
     prec, rec = tp / ret.sum(), tp / truth.sum()
-    return 2 * prec * rec / (prec + rec), 1 - prec, 1 - rec
+    return (1 + _beta ** 2) * prec * rec / (_beta ** 2 * prec + rec), 1 - prec, 1 - rec
 
 
 def best_cutoff(raw, truth):
@@ -81,6 +95,8 @@ def greedy(S, truth):
 
 
 def fit_colour(col, labels, clusters, nk):
+    global _beta
+    _beta = BETA.get(col, 1.0)
     J = judged(labels, col)
     vids = list(J)
     truth = np.array([J[v] for v in vids])
@@ -121,14 +137,21 @@ def main():
     nk = max(NK_GRID, key=lambda k: sum(fit_colour(c, labels, clusters, k)[2] for c in NEUTRALS))
     print(f"neutral_k = {nk}")
     sw = []
+    v1 = {p["name"]: p for p in json.loads((HERE.parent / "palette.json").read_text())}
     for col in colours:
+        if col in KEEP_V1:
+            for j, name in enumerate(KEEP_V1[col]):
+                sw.append({"name": f"{col}{j + 1}", "group": col, "lab": v1[name]["lab"],
+                           "min_score": v1[name]["min_score"]})
+            print(f"{col:7s} kept from 1.3.0: " + ", ".join(KEEP_V1[col]))
+            continue
         protos, t, f, wrong, missed = fit_colour(col, labels, clusters, nk)
         desc = []
         for j, p in enumerate(protos):
             sw.append({"name": f"{col}{j + 1}", "group": col, "lab": [round(float(x), 2) for x in p],
                        "min_score": round(t, 4)})
             desc.append(f"L{p[0]:.0f} C{np.hypot(p[1], p[2]):.0f} h{np.degrees(np.arctan2(p[2], p[1])) % 360:.0f}")
-        print(f"{col:7s} F1 {f:.2f}  wrong {wrong:.0%} missed {missed:.0%}  cutoff {t:.3f}  swatches: " + ", ".join(desc))
+        print(f"{col:7s} F{_beta:g} {f:.2f}  wrong {wrong:.0%} missed {missed:.0%}  cutoff {t:.3f}  swatches: " + ", ".join(desc))
     Path(args.out).write_text(json.dumps({"neutral_k": nk, "swatches": sw}, indent=1))
 
 

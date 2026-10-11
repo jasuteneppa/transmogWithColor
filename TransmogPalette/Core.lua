@@ -3,6 +3,14 @@ local ADDON, ns = ...
 local function InitDB()
     TransmogPaletteDB = TransmogPaletteDB or {}
     TransmogPaletteDB.primaryColors = TransmogPaletteDB.primaryColors or {}
+    -- Excluded colours, a set of swatch keys: a piece that also has any of
+    -- them is left out (see MatchesFilter).
+    TransmogPaletteDB.excludeColors = TransmogPaletteDB.excludeColors or {}
+    -- The roller's own More / Less (Randomizer.lua). Starts as the strip's, so
+    -- pools saved before it existed keep meaning what they meant.
+    if TransmogPaletteDB.rollDetail ~= "all" and TransmogPaletteDB.rollDetail ~= "general" then
+        TransmogPaletteDB.rollDetail = TransmogPaletteDB.matchDetail == "all" and "all" or "general"
+    end
     -- Development-only capture for the offline colour generator; see
     -- RecordVisual. Defaults off, and the table stays empty for players.
     TransmogPaletteDB.exportedVisuals = TransmogPaletteDB.exportedVisuals or {}
@@ -55,6 +63,10 @@ local function InitDB()
     -- { point, relPoint, x, y }. Nil means the default spot under the search box.
     if type(TransmogPaletteDB.stripPos) ~= "table" then
         TransmogPaletteDB.stripPos = nil
+    end
+    -- The Collections journal's strip, dragged separately (Core.lua journal hook).
+    if type(TransmogPaletteDB.stripPosJournal) ~= "table" then
+        TransmogPaletteDB.stripPosJournal = nil
     end
 
     -- Whether the strip shows the general swatches or all of them (the More /
@@ -162,6 +174,7 @@ end
 
 local function HasActiveFilter()
     if ns.state.accentColor then return true end
+    if next(ns.state.excludeColors) then return true end
     return next(ns.state.primaryColors) ~= nil
 end
 
@@ -173,6 +186,10 @@ end
 --
 -- Scores are relative to each swatch's cutoff, so they compare across
 -- swatches; the best one is what the filtered list is sorted by.
+--
+-- EXCLUDED colours drop any piece that matches one of them -- with pieces now
+-- in every colour they plausibly have, "black and white, but nothing that is
+-- also red" is a real question.
 --
 -- `skip` is "primary" or "accent": that part of the filter is ignored, so the
 -- strip can count what a swatch would yield given the REST of the filter. A
@@ -188,7 +205,7 @@ local function BestMainScore(visualID)
 end
 
 local function MatchesFilter(visualID, skip)
-    if not visualID or not ns.HasColorData(visualID) then return false end
+    if not visualID or not ns.HasMatchData(visualID) then return false end
     if skip ~= "primary" and next(ns.state.primaryColors) then
         local best = BestMainScore(visualID)
         if not best or best < 1 then return false end
@@ -197,15 +214,27 @@ local function MatchesFilter(visualID, skip)
         local r = ns.MatchScore(visualID, ns.state.accentColor.key)
         if not r or r < 1 then return false end
     end
+    for key in pairs(ns.state.excludeColors) do
+        if ns.MatchExcluded(visualID, key) then return false end
+    end
     return true
 end
 
 -- What a filtered list is sorted by: the best main score, or with only an
 -- accent picked, the accent's.
 local function SortScore(visualID)
-    if next(ns.state.primaryColors) then return BestMainScore(visualID) or 0 end
+    -- ns.MatchSortScore: pieces mainly the picked colour first, then pieces
+    -- that only carry some of it (Matching.lua).
+    if next(ns.state.primaryColors) then
+        local best = 0
+        for key in pairs(ns.state.primaryColors) do
+            local r = ns.MatchSortScore(visualID, key)
+            if r > best then best = r end
+        end
+        return best
+    end
     local accent = ns.state.accentColor
-    return accent and ns.MatchScore(visualID, accent.key) or 0
+    return accent and ns.MatchSortScore(visualID, accent.key) or 0
 end
 
 ns.MatchesFilterExcept = MatchesFilter
@@ -830,6 +859,91 @@ local function TryHookTransmog()
     return true
 end
 
+-- === Collections > Appearances (the journal) ===
+-- Revisits the decision noted above TransmogFrame: the strip and filter now
+-- also go on the journal, for finding gear by colour -- including gear not
+-- collected yet, which the journal lists and the Transmogrifier does not.
+--
+-- From Blizzard_Wardrobe.lua (wow-ui-source 12.1.0): RefreshVisualsList fetches
+-- the category, FilterVisuals copies it into self.filteredVisualsList,
+-- SortVisuals sorts that, and only THEN are the pages counted and drawn from
+-- it. So a post-hook on SortVisuals sees the journal's own final list and can
+-- replace it, and the page count follows. Same filter and sort as the
+-- Transmogrifier, same selection: one strip state, two windows.
+local function GetJournalItemsFrame()
+    return WardrobeCollectionFrame and WardrobeCollectionFrame.ItemsCollectionFrame
+end
+
+local function JournalCapturing()
+    return ns.IsJournalCapturing and ns.IsJournalCapturing()
+end
+
+local function ApplyColorFilterToJournal(items)
+    local list = items.filteredVisualsList
+    -- Weapon enchants (illusions) share the frame and are not appearances.
+    if not list or (items.transmogLocation and items.transmogLocation:IsIllusion()) then return end
+
+    -- Counts come from everything the journal would list, collected or not --
+    -- its own Collected / Not Collected / source filters already applied.
+    local vids = {}
+    for _, info in ipairs(list) do
+        if info.visualID then vids[#vids + 1] = info.visualID end
+    end
+    ns.SetCurrentVisualIDs(vids)
+    if ns.RefreshColorPanels then ns.RefreshColorPanels() end
+
+    if not HasActiveFilter() or JournalCapturing() then return end
+    local filtered, score, order = {}, {}, {}
+    for i, info in ipairs(list) do
+        if MatchesFilter(info.visualID) then
+            filtered[#filtered + 1] = info
+            score[info] = SortScore(info.visualID)
+            order[info] = i
+        end
+    end
+    table.sort(filtered, function(a, b)
+        if score[a] ~= score[b] then return score[a] > score[b] end
+        return order[a] < order[b]
+    end)
+    items.filteredVisualsList = filtered
+end
+
+local function RefreshJournal()
+    local items = GetJournalItemsFrame()
+    if not (items and items:IsVisible() and items.transmogLocation) then return end
+    items:RefreshVisualsList()
+    items:ResetPage()
+end
+
+local journalHooked = false
+local function TryHookJournal()
+    if journalHooked then return end
+    local items = GetJournalItemsFrame()
+    if not (items and items.SortVisuals and items.RefreshVisualsList) then return end
+    hooksecurefunc(items, "SortVisuals", ApplyColorFilterToJournal)
+    journalHooked = true
+
+    if ns.RegisterColorPanel then
+        ns.RegisterColorPanel(items, WardrobeCollectionFrame.SearchBox, RefreshJournal, {
+            posKey = "stripPosJournal",
+            -- Under the window rather than over the grid: the journal's top
+            -- edge is slot buttons and filters, with no spare row to cover.
+            place = function(panel)
+                panel:SetPoint("TOPRIGHT", CollectionsJournal, "BOTTOMRIGHT", 0, -2)
+            end,
+            visible = function() return not JournalCapturing() end,
+            strata = "DIALOG",
+        })
+    end
+    if ns.RegisterJournalColorTags then ns.RegisterJournalColorTags(items) end
+    -- The strip's counts follow whichever list was drawn last; hand them back
+    -- to the Transmogrifier when the journal closes over it.
+    items:HookScript("OnHide", function()
+        if TransmogFrame and TransmogFrame:IsShown() then RefreshTransmog() end
+    end)
+    RefreshJournal()
+end
+
 -- === Colour correction on the appearance right-click menu ===
 --
 -- Blizzard already owns right-click on a tile ("Transmogrify as:" / Set
@@ -956,7 +1070,11 @@ f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(_, event, name)
     if event == "ADDON_LOADED" and name == ADDON then
         InitDB()
+    elseif event == "ADDON_LOADED" and name == "Blizzard_Collections" then
+        TryHookJournal()
     elseif event == "PLAYER_LOGIN" then
+        -- Load-on-demand, but another addon may have loaded it already.
+        TryHookJournal()
         StartTransmogPoll()
         -- Registered by TAG, so it does not need the Transmogrifier -- or even
         -- Blizzard_TransmogShared -- to be loaded yet. Menu.ModifyMenu just
@@ -1536,6 +1654,10 @@ SlashCmdList["TRANSMOGPALETTE"] = function(msg)
         print(("  swatches: %s. mains (%d): %s"):format(
             ns.MatchDetail(), #mains, #mains > 0 and table.concat(mains, ", ") or "(none)"))
         print(("  accent: %s"):format(ns.state.accentColor and ns.state.accentColor.key or "(empty)"))
+        local ex = {}
+        for key in pairs(ns.state.excludeColors) do ex[#ex + 1] = key end
+        table.sort(ex)
+        print(("  excluded: %s"):format(#ex > 0 and table.concat(ex, ", ") or "(none)"))
         return
     end
 

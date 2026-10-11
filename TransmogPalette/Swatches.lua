@@ -6,7 +6,7 @@ local _, ns = ...
 -- matching the way that evaluation measured.
 
 ns.MatchConstants = {
-    version = "v2:palette_v2",
+    version = "v2:palette_v2b",
     gain = 0.95, offset = 15.8, chroma = 1.13,
     kL = 0.5, sigma = 12.0,
     neutralTargetChroma = 10.0, neutralKTint = 2.5,
@@ -21,13 +21,14 @@ ns.MatchSwatches = {
     { key = "black1", name = "Black", group = "g_black", L = 14.00, a = 0.00, b = 0.00, r = 0.140, g = 0.140, bl = 0.140, minScore = 0.3495 },
     { key = "gray1", name = "Gray", group = "g_gray", L = 56.00, a = 0.00, b = 0.00, r = 0.526, g = 0.526, bl = 0.526, minScore = 0.052 },
     { key = "white1", name = "White", group = "g_white", L = 90.00, a = 0.00, b = 0.00, r = 0.888, g = 0.888, bl = 0.888, minScore = 0.0101 },
-    { key = "red1", name = "Red", group = "g_red", L = 42.81, a = 36.18, b = 24.69, r = 0.641, g = 0.289, bl = 0.244, minScore = 0.1175 },
+    { key = "red1", name = "Red", group = "g_red", L = 42.81, a = 36.18, b = 24.69, r = 0.641, g = 0.289, bl = 0.244, minScore = 0.1207 },
     { key = "orange1", name = "Orange", group = "g_orange", L = 63.39, a = 17.58, b = 41.43, r = 0.795, g = 0.550, bl = 0.312, minScore = 0.6408 },
-    { key = "brown1", name = "Brown", group = "g_brown", L = 36.35, a = 2.95, b = 12.82, r = 0.383, g = 0.326, bl = 0.256, minScore = 0.2055 },
-    { key = "gold1", name = "Gold", group = "g_gold", L = 59.69, a = 5.16, b = 48.57, r = 0.689, g = 0.543, bl = 0.215, minScore = 0.1789 },
+    { key = "brown1", name = "Brown", group = "g_brown", L = 36.35, a = 2.95, b = 12.82, r = 0.383, g = 0.326, bl = 0.256, minScore = 0.2228 },
+    { key = "gold1", name = "Gold", group = "g_gold", L = 77.01, a = 6.56, b = 48.51, r = 0.896, g = 0.720, bl = 0.388, minScore = 0.2511 },
     { key = "green1", name = "Green", group = "g_green", L = 47.70, a = -26.29, b = 28.83, r = 0.325, g = 0.486, bl = 0.246, minScore = 0.0625 },
     { key = "blue1", name = "Blue", group = "g_blue", L = 51.01, a = -8.76, b = -40.35, r = 0.000, g = 0.508, bl = 0.745, minScore = 0.0928 },
-    { key = "purple1", name = "Purple", group = "g_purple", L = 55.30, a = 23.46, b = -24.71, r = 0.598, g = 0.470, bl = 0.688, minScore = 0.1115 },
+    { key = "purple1", name = "Purple", group = "g_purple", L = 37.56, a = 23.33, b = -19.36, r = 0.435, g = 0.296, bl = 0.470, minScore = 0.205 },
+    { key = "purple2", name = "Purple", group = "g_purple", L = 50.46, a = 51.22, b = -73.20, r = 0.496, g = 0.360, bl = 0.969, minScore = 0.095 },
     { key = "pink1", name = "Pink", group = "g_pink", L = 46.94, a = 41.78, b = -21.60, r = 0.635, g = 0.325, bl = 0.582, minScore = 0.4695 },
 }
 
@@ -42,6 +43,6 @@ ns.MatchGroups = {
     { key = "g_gold", name = "Gold", face = "gold1", members = { "gold1" } },
     { key = "g_green", name = "Green", face = "green1", members = { "green1" } },
     { key = "g_blue", name = "Blue", face = "blue1", members = { "blue1" } },
-    { key = "g_purple", name = "Purple", face = "purple1", members = { "purple1" } },
+    { key = "g_purple", name = "Purple", face = "purple1", members = { "purple1", "purple2" } },
     { key = "g_pink", name = "Pink", face = "pink1", members = { "pink1" } },
 }

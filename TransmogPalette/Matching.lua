@@ -199,7 +199,134 @@ end
 
 -- How well an appearance matches a strip key -- a swatch key, or a general
 -- group key (its best member). >= 1 is a match. nil when there is no data.
+-- === Learned scores (ColorScores.lua) ===
+-- Appearances captured from the Collections journal carry a score per general
+-- colour from a model trained on eye-judged labels; it beats closeness matching
+-- on every colour (tools/benchmark/README.md). Where one exists it is used
+-- instead, on the same scale: 1 is that colour's cutoff, higher matches more.
+-- Swatch keys (the "all" strip) take their general colour's score.
+local scoreIndex = {}
+for i, key in ipairs(ns.ColorScoreGroups or {}) do scoreIndex[key] = i end
+
+-- A hand correction wins: such an appearance is matched on its corrected
+-- colour by closeness (Relative reads the override), not by its scores.
+local function Scores(visualID)
+    local o = ns.OverrideFor and ns.OverrideFor(visualID)
+    if o and (o.main or o.accent) then return nil end
+    return ns.ColorScores and ns.ColorScores[visualID]
+end
+
+-- === Light / dark (the "More" row) ===
+-- Each general colour split into a darker and a lighter half, by how light
+-- the appearance looks IN THAT COLOUR on screen, measured against the
+-- appearances of the same colour in the same slot (tools/build_scores.py).
+-- Shade keys are "<group key>:dark" / ":light". An appearance matches a shade
+-- when it matches the colour and falls in that half; only learned scores carry
+-- the split, so closeness-only appearances appear under the colours alone.
+-- Black, grey and white are already one lightness scale, so they are not
+-- split again: the top row starts black, white, the bottom row dark grey,
+-- light grey (only grey has halves), then each chromatic colour's light half
+-- above its dark half. Strip order is the top row, then the bottom row (see
+-- ns.MatchStripColumns).
+--
+-- Display colours: what a swatch is DRAWN as. The matching swatches
+-- (Swatches.lua) are measured, muted colours -- pink came out a dull mauve --
+-- so the strip, the roller and the tile tags use these clear ones instead.
+local DISPLAY = {
+    g_black = { 0.10, 0.10, 0.11 }, g_gray = { 0.50, 0.50, 0.52 }, g_white = { 0.92, 0.92, 0.92 },
+    g_red = { 0.82, 0.16, 0.14 }, g_orange = { 0.95, 0.50, 0.10 }, g_brown = { 0.55, 0.34, 0.17 },
+    g_gold = { 0.87, 0.70, 0.20 }, g_green = { 0.24, 0.64, 0.24 }, g_blue = { 0.18, 0.44, 0.88 },
+    g_purple = { 0.56, 0.28, 0.78 }, g_pink = { 0.96, 0.44, 0.72 },
+}
+local NEUTRAL_KEYS = { g_black = true, g_gray = true, g_white = true }
+
+local function Display(groupKey)
+    local c = DISPLAY[groupKey]
+    if c then return c[1], c[2], c[3] end
+    local g = groupByKey[groupKey]
+    local face = g and swatchByKey[g.face]
+    return face.r, face.g, face.bl
+end
+
+local SHADES, shadeByKey = {}, {}
+local function AddShade(groupKey, side)
+    local g = groupByKey[groupKey]
+    local r, gg, b = Display(groupKey)
+    if not side then    -- black / white: the whole colour, unsplit
+        SHADES[#SHADES + 1] = { key = groupKey, group = groupKey, name = g.name, r = r, g = gg, b = b }
+        return
+    end
+    local light = side == "light"
+    local function Tint(c) return light and c + (1 - c) * 0.40 or c * 0.58 end
+    local sh = { key = groupKey .. ":" .. side, group = groupKey, light = light,
+                 name = (light and "Light " or "Dark ") .. g.name:lower(),
+                 r = Tint(r), g = Tint(gg), b = Tint(b) }
+    if groupKey == "g_gray" then   -- grey's halves are greys, not tints
+        local v = light and 0.72 or 0.33
+        sh.r, sh.g, sh.b = v, v, v + 0.02
+    end
+    SHADES[#SHADES + 1] = sh
+    shadeByKey[sh.key] = sh
+end
+-- Pink and purple are not split either: light purple reads as pink and dark
+-- pink as purple, so they share one column, pink over purple.
+local UNSPLIT = { g_pink = true, g_purple = true }
+for _, side in ipairs({ "light", "dark" }) do
+    if side == "light" then
+        AddShade("g_black")
+        AddShade("g_white")
+    else
+        AddShade("g_gray", "dark")
+        AddShade("g_gray", "light")
+    end
+    for _, g in ipairs(GROUPS) do
+        if not NEUTRAL_KEYS[g.key] and not UNSPLIT[g.key] then AddShade(g.key, side) end
+    end
+    AddShade(side == "light" and "g_pink" or "g_purple")
+end
+local SHADE_COLUMNS = #SHADES / 2
+
+-- An appearance that clears NO colour's cutoff still belongs somewhere: it
+-- joins its closest colour, at exactly the cutoff (score 1), and is listed
+-- after every real match (MatchSortScore). 8,411 of 39,272 appearances at the
+-- 2026-10-11 build -- mostly small pieces (bracers, belts, helms, weapons)
+-- whose colour is real but covers little of the tile. Cached on the decoded
+-- table: the colour index, or false when the appearance has a real match.
+local function Fallback(scores)
+    local fb = scores.fallback
+    if fb == nil then
+        local best = 1
+        for i = 2, #ns.ColorScoreGroups do
+            if scores[i] > scores[best] then best = i end
+        end
+        fb = scores[best] < 128 and best
+        scores.fallback = fb
+    end
+    return fb
+end
+
+local function ScoreFor(scores, key)
+    local sh = shadeByKey[key]
+    local sw = swatchByKey[key]
+    local gi = scoreIndex[(sh and sh.group) or (sw and sw.group) or key]
+    if not gi then return 0 end
+    local score = 1 + (scores[gi] - 128) / ns.ColorScoreScale
+    if Fallback(scores) == gi and score < 1 then score = 1 end
+    if sh then
+        local light = scores[#ns.ColorScoreGroups + gi] >= 128
+        if light ~= sh.light then return 0 end
+    end
+    return score
+end
+
+-- Whether the colour filter can judge this appearance at all.
+function ns.HasMatchData(visualID)
+    return (ns.ColorScores and ns.ColorScores[visualID]) ~= nil or ns.HasColorData(visualID)
+end
+
 function ns.MatchScore(visualID, key)
+    local scores = Scores(visualID)
+    if scores then return ScoreFor(scores, key) end
     local rel = Relative(visualID)
     if not rel then return nil end
     local sw = swatchByKey[key]
@@ -218,6 +345,29 @@ end
 -- second is skipped when it is in the same general group as the first (a red
 -- piece is "red", not "red and maroon") or barely registers.
 function ns.TopSwatches(visualID)
+    local scores = Scores(visualID)
+    if scores then
+        -- Learned scores are per general colour: the two best, drawn as each
+        -- colour's face swatch.
+        -- Only the colour scores: the bytes after them are light / dark.
+        local first, second
+        for i = 1, #ns.ColorScoreGroups do
+            if not first or scores[i] > scores[first] then first = i end
+        end
+        for i = 1, #ns.ColorScoreGroups do
+            if i ~= first and (not second or scores[i] > scores[second]) then second = i end
+        end
+        local function Face(i)
+            local key = ns.ColorScoreGroups[i]
+            local g = groupByKey[key]
+            if not g then return nil end
+            local face = swatchByKey[g.face]
+            local r, gg, b = Display(key)
+            return { key = face.key, group = key, name = g.name, r = r, g = gg, bl = b }
+        end
+        if second and ScoreFor(scores, ns.ColorScoreGroups[second]) < 0.5 then second = nil end
+        return Face(first), second and Face(second) or nil
+    end
     local rel = Relative(visualID)
     if not rel then return nil end
     local first, second
@@ -241,54 +391,100 @@ function ns.MatchDetail()
 end
 
 -- Strip order for the current detail level: { key, name, r, g, b }.
-function ns.MatchStripKeys()
+-- `detail` defaults to the strip's; the roller passes its own.
+function ns.MatchStripKeys(detail)
     local out = {}
-    if ns.MatchDetail() == "all" then
-        for _, s in ipairs(SWATCHES) do
-            out[#out + 1] = { key = s.key, name = s.name, r = s.r, g = s.g, b = s.bl }
+    if (detail or ns.MatchDetail()) == "all" then
+        for _, sh in ipairs(SHADES) do
+            out[#out + 1] = { key = sh.key, name = sh.name, r = sh.r, g = sh.g, b = sh.b }
         end
     else
         for _, g in ipairs(GROUPS) do
-            local face = swatchByKey[g.face]
-            out[#out + 1] = { key = g.key, name = g.name, r = face.r, g = face.g, b = face.bl }
+            local r, gg, b = Display(g.key)
+            out[#out + 1] = { key = g.key, name = g.name, r = r, g = gg, b = b }
         end
     end
     return out
 end
 
+-- Swatches per strip row when the layout is fixed: the light / dark row has
+-- one column per colour, so light sits directly above dark. nil = fit to width.
+function ns.MatchStripColumns(detail)
+    return (detail or ns.MatchDetail()) == "all" and SHADE_COLUMNS or nil
+end
+
 function ns.MatchKeyInfo(key)
+    local sh = shadeByKey[key]
+    if sh then return { key = key, name = sh.name, r = sh.r, g = sh.g, b = sh.b } end
     local s = swatchByKey[key]
     if s then return { key = key, name = s.name, r = s.r, g = s.g, b = s.bl } end
     local g = groupByKey[key]
     if g then
-        local face = swatchByKey[g.face]
-        local names = {}
-        for _, m in ipairs(g.members) do names[#names + 1] = swatchByKey[m].name end
-        return { key = key, name = g.name, r = face.r, g = face.g, b = face.bl,
-                 members = table.concat(names, ", ") }
+        local r, gg, b = Display(key)
+        return { key = key, name = g.name, r = r, g = gg, b = b }
     end
     return nil
 end
 
--- Switching between general and all keeps the selection: a group becomes its
--- members, and a set of members becomes their groups.
+-- What a filtered list is sorted by: the key's score, plus a large bonus when
+-- the key's colour is the appearance's MAIN colour (its highest-scoring one).
+-- Inclusive cutoffs let a piece join every colour it plausibly has -- black
+-- armour with a red panel is black AND red -- and this keeps the pieces that
+-- are mainly that colour first, the ones that merely carry some of it after.
+local MAIN_BONUS = 1000
+function ns.MatchSortScore(visualID, key)
+    local score = ns.MatchScore(visualID, key) or 0
+    -- Closest-colour members (see Fallback) never rank as a main colour.
+    local scores = Scores(visualID)
+    if scores and Fallback(scores) then return score end
+    local sh, sw = shadeByKey[key], swatchByKey[key]
+    local group = (sh and sh.group) or (sw and sw.group) or key
+    local own = ns.MatchScore(visualID, group) or 0
+    for _, g in ipairs(GROUPS) do
+        if g.key ~= group and (ns.MatchScore(visualID, g.key) or 0) > own then return score end
+    end
+    return score + MAIN_BONUS
+end
+
+-- Switching between general and all keeps the selection: a colour becomes its
+-- light and dark halves, and halves become their colour. (Swatch keys from the
+-- old "More" row are read as their colour too.)
 local function Translate(selection, toAll)
     if not selection then return nil end
     local out = {}
-    for key in pairs(selection) do
-        if toAll then
-            local g = groupByKey[key]
-            if g then
-                for _, m in ipairs(g.members) do out[m] = true end
-            elseif swatchByKey[key] then
-                out[key] = true
+    for key, val in pairs(selection) do
+        val = (val == "exclude") and val or true
+        local sh, s = shadeByKey[key], swatchByKey[key]
+        local group = (sh and sh.group) or (s and s.group) or (groupByKey[key] and key)
+        if group then
+            if toAll and sh then
+                out[key] = val
+            elseif toAll and (group == "g_black" or group == "g_white" or UNSPLIT[group]) then
+                out[group] = val       -- not split (see SHADES)
+            elseif toAll then
+                out[group .. ":dark"], out[group .. ":light"] = val, val
+            elseif out[group] ~= true then
+                -- Back to general: a colour wanted in either half is wanted.
+                out[group] = val
             end
-        else
-            local s = swatchByKey[key]
-            if s then out[s.group] = true elseif groupByKey[key] then out[key] = true end
         end
     end
     return out
+end
+
+-- For the roller, which switches its own pools (Randomizer.lua).
+function ns.TranslateSelection(selection, toAll)
+    return Translate(selection, toAll)
+end
+
+-- Excluding is deliberately looser than including: "nothing that is also red"
+-- should drop a piece with a noticeable amount of red even when the red is not
+-- enough to list it under red. A score of 1 is a colour's cutoff.
+ns.EXCLUDE_AT = 0.5
+
+function ns.MatchExcluded(visualID, key)
+    local r = ns.MatchScore(visualID, key)
+    return r ~= nil and r >= ns.EXCLUDE_AT
 end
 
 function ns.SetMatchDetail(detail)
@@ -305,6 +501,7 @@ function ns.SetMatchDetail(detail)
         local k = t and next(t)
         ns.state.accentColor = k and { key = k } or nil
     end
+    ns.state.excludeColors = Translate(ns.state.excludeColors, toAll) or {}
     ns.state.matchDetail = detail
 end
 
