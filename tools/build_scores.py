@@ -87,6 +87,19 @@ def bare_tiles(index):
             ref = refs.get(index[v]["slot"])
             if ref is not None and _near(_small(v), ref):
                 bare.add(v)
+        # New tiles identical to each other are bare too: two appearances never
+        # look the same, but a model that never rendered leaves the same empty
+        # body every time -- even when the framing has moved off the saved
+        # reference (12.1.5: three shoulders, 17.5% off it, all identical).
+        by_slot = {}
+        for v in new:
+            by_slot.setdefault(index[v]["slot"], []).append(v)
+        for vs in by_slot.values():
+            if len(vs) >= 2:
+                X = np.stack([_small(v) for v in vs])
+                for i, v in enumerate(vs):
+                    if _near(X, X[i]).sum() >= 2:
+                        bare.add(v)
         print(f"bare-tile check: {len(new)} new tiles checked ({len(checked)} from the cache)")
     else:
         bare, refs = set(), {}

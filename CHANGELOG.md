@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+**Colours for appearances added in 12.1.5.** The new swords, back pieces,
+shoulders, boots and helm now show swatches and turn up under their colours,
+like everything else. No other appearance's colours changed.
+
 ## 1.3.0
 
 **Colours that match what you see.** Every appearance in the Collections
